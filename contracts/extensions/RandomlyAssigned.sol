@@ -54,7 +54,6 @@ abstract contract RandomlyAssigned {
         // There goes another one
         count.increment();
 
-        // Don't allow a zero index, start counting at 1
-        return value + 1;
+        return value;
     }
 }

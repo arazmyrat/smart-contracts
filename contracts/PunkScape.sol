@@ -61,10 +61,9 @@ contract PunkScape is
     function mint() external payable afterSaleStart ensureAvailability {
         require(msg.value >= price, "Sorry it is 0.02ETH, friend");
 
-        CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
-        bool hasPunk = cryptopunks.balanceOf(msg.sender) > 0;
-
-        // TODO: If hasPunk === false, then mint OneDayPunk
+        // CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
+        // bool hasPunk = cryptopunks.balanceOf(msg.sender) > 0;
+        // // TODO: If hasPunk === false, then mint OneDayPunk
 
         jalil.transfer(msg.value);
 
@@ -75,7 +74,7 @@ contract PunkScape is
 
     // TODO: Mint up to 50 at once
 
-    // Get the tokenURI for a specific nim
+    // Get the tokenURI for a specific token
     function tokenURI(uint256 tokenId)
         public view override(HasIPFSMetaData, ERC721)
         returns (string memory)
