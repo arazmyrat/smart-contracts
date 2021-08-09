@@ -22,11 +22,11 @@ module.exports = {
   networks: {
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [`0x${process.env.TEST_WALLET_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.OWNER_PRIVATE_KEY}`],
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: [`0x${process.env.TEST_WALLET_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.OWNER_PRIVATE_KEY}`],
     },
     hardhat: {
       chainId: 1337,
