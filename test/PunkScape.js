@@ -185,7 +185,7 @@ describe('PunkScape Contract', () => {
     })
     it('Reports fee BPS for a token', async () => {
       const bpsArray = await contract.getFeeBps(80)
-      expect(JSON.stringify(bpsArray.map(bps => bps.toNumber()))).to.equal(JSON.stringify([500]))
+      expect(JSON.stringify(bpsArray.map(bps => bps.toNumber()))).to.equal(JSON.stringify([250]))
     })
   })
 })

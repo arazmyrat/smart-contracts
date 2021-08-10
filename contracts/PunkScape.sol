@@ -97,7 +97,7 @@ contract PunkScape is
     // Implement the `HasSecondarySalesFees` Contract
     function getFeeBps(uint256) public pure override returns (uint256[] memory) {
         uint256[] memory bps = new uint256[](1);
-        bps[0] = 500;
+        bps[0] = 250;
         return bps;
     }
 
