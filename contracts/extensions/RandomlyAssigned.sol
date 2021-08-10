@@ -16,7 +16,7 @@ abstract contract RandomlyAssigned {
     Counters.Counter public count;
 
     // Used for random index assignment
-    uint256 internal nonce = 0;
+    Counters.Counter internal nonce;
     uint256[MAX_COUNT] internal indices;
 
     // Enure that there are still available scapes
@@ -27,13 +27,11 @@ abstract contract RandomlyAssigned {
 
     function randomIndex() internal returns (uint256) {
         uint256 totalSize = MAX_COUNT - count.current();
-        uint256 index = uint256(
-            keccak256(
-                abi.encodePacked(nonce, msg.sender, block.difficulty, block.timestamp)
-            )
-        ) % totalSize;
-        uint256 value = 0;
+        uint256 index = uint256(keccak256(
+            abi.encodePacked(nonce.current(), msg.sender, block.difficulty, block.timestamp)
+        )) % totalSize;
 
+        uint256 value = 0;
         if (indices[index] != 0) {
             value = indices[index];
         } else {
@@ -42,17 +40,16 @@ abstract contract RandomlyAssigned {
 
         // Move last value to selected position
         if (indices[totalSize - 1] == 0) {
-            // Array position not initialized, so use position
+            // Max array position not initialized, so mark position
             indices[index] = totalSize - 1;
         } else {
-            // Array position holds a value so use that
+            // Max array position holds a value so copy that
             indices[index] = indices[totalSize - 1];
         }
 
-        nonce++;
-
-        // There goes another one
+        // Increment counts
         count.increment();
+        nonce.increment();
 
         return value;
     }
