@@ -44,8 +44,17 @@ contract OneDayPunk is
         HasContractMetaData(_contractMetaDataURI)
     {}
 
-    // Mint a "One Day I'll Be A Punk"-Punk
-    function mint(address to) external ensureAvailability onePerWallet(to) {
+    // Claim a "One Day I'll Be A Punk"-Punk
+    function claim() external {
+        _claim(msg.sender);
+    }
+
+    // Claim a "One Day I'll Be A Punk"-Punk to a specific address
+    function mint(address to) external {
+        _claim(to);
+    }
+
+    function _claim (address to) internal ensureAvailability onePerWallet(to) {
         CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
         require(cryptopunks.balanceOf(to) == 0, "You lucky one already have a CryptoPunk.");
 
