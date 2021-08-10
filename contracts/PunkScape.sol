@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./extensions/SetsSaleStart.sol";
 import "./extensions/HasContractMetaData.sol";
-import "./extensions/HasSecondarySaleFees.sol";
+import "./extensions/WithFees.sol";
 import "./extensions/RandomlyAssigned.sol";
 import "./extensions/HasIPFSMetaData.sol";
 
@@ -35,15 +35,13 @@ contract PunkScape is
     HasIPFSMetaData,
     RandomlyAssigned,
     HasContractMetaData,
-    HasSecondarySaleFees
+    WithFees
 {
     using Counters for Counters.Counter;
 
-    address payable internal jalil;
     uint256 public price = 0.02 ether;
     address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
     address private oneDayPunkAddress;
-    string public cid;
 
     // Instantiate the PunkScape Contract
     constructor(
@@ -55,10 +53,10 @@ contract PunkScape is
     )
         ERC721("PunkScape", "SCAPE")
         SetsSaleStart(_saleStart)
+        WithFees(_jalil, 250)
         HasContractMetaData(_contractMetaDataURI)
+        HasIPFSMetaData(_cid)
     {
-        jalil = _jalil;
-        cid = _cid;
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
@@ -80,8 +78,8 @@ contract PunkScape is
         uint256 newScape = randomIndex();
         _safeMint(msg.sender, newScape);
 
-        // Make me rich
-        jalil.transfer(msg.value);
+        // Make it rain
+        beneficiary.transfer(msg.value);
     }
 
     // TODO: Mint up to 50 at once
@@ -95,27 +93,15 @@ contract PunkScape is
     }
 
     // Configure the baseURI for the tokenURI method.
-    function _baseURI() internal view override returns (string memory) {
-        return string(abi.encodePacked("ipfs://", cid));
-    }
-
-    // Implement the `HasSecondarySalesFees` Contract
-    function getFeeRecipients(uint256) public view override returns (address payable[] memory) {
-        address payable[] memory recipient = new address payable[](1);
-        recipient[0] = jalil;
-        return recipient;
-    }
-
-    // Implement the `HasSecondarySalesFees` Contract
-    function getFeeBps(uint256) public pure override returns (uint256[] memory) {
-        uint256[] memory bps = new uint256[](1);
-        bps[0] = 250;
-        return bps;
+    function _baseURI()
+        internal view override(HasIPFSMetaData, ERC721)
+        returns (string memory)
+    {
+        return HasIPFSMetaData._baseURI();
     }
 
     // We support the `HasSecondarySalesFees` Interface
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC165) returns (bool) {
-        return interfaceId == type(HasSecondarySaleFees).interfaceId
-            || ERC721.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override(WithFees, ERC721) returns (bool) {
+        return WithFees.supportsInterface(interfaceId);
     }
 }

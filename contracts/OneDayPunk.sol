@@ -4,11 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
-import "./extensions/SetsSaleStart.sol";
 import "./extensions/HasContractMetaData.sol";
-import "./extensions/HasSecondarySaleFees.sol";
 import "./extensions/WithLimitedTokenSupply.sol";
 import "./extensions/OnePerWallet.sol";
 import "./extensions/HasIPFSMetaData.sol";
@@ -34,10 +31,7 @@ contract OneDayPunk is
     OnePerWallet,
     HasContractMetaData
 {
-    using Counters for Counters.Counter;
-
     address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
-    string public cid;
 
     // Instantiate the PunkScape Contract
     constructor(
@@ -46,10 +40,9 @@ contract OneDayPunk is
     )
         ERC721("OneDayPunk", "ODP")
         WithLimitedTokenSupply(10000)
+        HasIPFSMetaData(_cid)
         HasContractMetaData(_contractMetaDataURI)
-    {
-        cid = _cid;
-    }
+    {}
 
     // Mint a "One Day I'll Be A Punk"-Punk
     function mint(address to) external ensureAvailability onePerWallet(to) {
@@ -70,8 +63,11 @@ contract OneDayPunk is
     }
 
     // Configure the baseURI for the tokenURI method.
-    function _baseURI() internal view override returns (string memory) {
-        return string(abi.encodePacked("ipfs://", cid));
+    function _baseURI()
+        internal view override(HasIPFSMetaData, ERC721)
+        returns (string memory)
+    {
+        return HasIPFSMetaData._baseURI();
     }
 
     // Mark OnePerWallet implementation as override for ERC721, OnePerWallet
