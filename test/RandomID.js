@@ -23,9 +23,9 @@ describe('Random ID Contract', () => {
       receipt = await transaction.wait()
       value = parseInt(receipt.events?.find(e => e.event === 'NewID').args.id)
       ids.push(value)
-      console.log('new ID', value)
+      // console.log('new ID', value)
     }
 
-    console.log('IDs', ids)
+    // console.log('IDs', ids)
   })
 })
