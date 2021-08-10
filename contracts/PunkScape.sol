@@ -65,10 +65,10 @@ contract PunkScape is
         require(msg.value >= price, "Sorry it is 0.02ETH, friend");
 
         // If you don't have a CryptoPunk, you get a "One Day I'll Be A Punk"-Punk
-        // CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
+        CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
         OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
         if (
-            // cryptopunks.balanceOf(msg.sender) == 0 &&
+            cryptopunks.balanceOf(msg.sender) == 0 &&
             oneDayPunk.balanceOf(msg.sender) == 0
         ) {
             oneDayPunk.mint(msg.sender);
