@@ -9,7 +9,9 @@ const CID = 'IPFS_CID_HASH'
 const START_SALE = nowInSeconds() - 10
 
 describe('PunkScape Contract', () => {
-  let PunkScape,
+  let OneDayPunk,
+      oneDayPunkContract,
+      PunkScape,
       contract,
       owner,
       jalil,
@@ -18,11 +20,23 @@ describe('PunkScape Contract', () => {
       addrs
 
   beforeEach(async () => {
+    OneDayPunk = await ethers.getContractFactory('OneDayPunk');
     PunkScape = await ethers.getContractFactory('PunkScape');
     [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
 
     // Deploy the smart contract
-    contract = await PunkScape.deploy(jalil.address, CID, START_SALE, 'https://punkscape.xyz/contract-meta')
+    oneDayPunkContract = await OneDayPunk.deploy(CID, 'https://punkscape.xyz/contract-meta')
+
+    console.log(oneDayPunkContract.address)
+    console.log(oneDayPunkContract.address)
+
+    contract = await PunkScape.deploy(
+      jalil.address,
+      CID,
+      START_SALE,
+      'https://punkscape.xyz/contract-meta',
+      oneDayPunkContract.address
+    )
   })
 
   describe('Deployment', () => {
@@ -66,7 +80,9 @@ describe('PunkScape Contract', () => {
           .to.be.revertedWith('Sale hasn\'t started yet')
       })
 
-      it('Should allow mint if sale has started', async () => {
+      it.only('Should allow mint if sale has started', async () => {
+        await contract.connect(owner).setSaleStart(nowInSeconds() - daysInSeconds(1))
+
         await expect(contract.connect(buyer1).mint({ value: PRICE }))
           .to.emit(contract, 'Transfer')
       })

@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+
 import "./extensions/SetsSaleStart.sol";
 import "./extensions/HasContractMetaData.sol";
 import "./extensions/HasSecondarySaleFees.sol";
@@ -13,6 +14,7 @@ import "./extensions/RandomlyAssigned.sol";
 import "./extensions/HasIPFSMetaData.sol";
 
 import "./CryptoPunkInterface.sol";
+import "./OneDayPunk.sol";
 
 // ████████████████████████████████████████████████████████████████████████████████████████ //
 // ██                                                                                    ██ //
@@ -40,6 +42,7 @@ contract PunkScape is
     address payable internal jalil;
     uint256 public price = 0.02 ether;
     address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
+    address private oneDayPunkAddress;
     string public cid;
 
     // Instantiate the PunkScape Contract
@@ -47,7 +50,8 @@ contract PunkScape is
         address payable _jalil,
         string memory _cid,
         uint256 _saleStart,
-        string memory _contractMetaDataURI
+        string memory _contractMetaDataURI,
+        address _oneDayPunkAddress
     )
         ERC721("PunkScape", "SCAPE")
         SetsSaleStart(_saleStart)
@@ -55,21 +59,29 @@ contract PunkScape is
     {
         jalil = _jalil;
         cid = _cid;
+        oneDayPunkAddress = _oneDayPunkAddress;
     }
 
     // Mint one PunkScape
     function mint() external payable afterSaleStart ensureAvailability {
         require(msg.value >= price, "Sorry it is 0.02ETH, friend");
 
+        // If you don't have a CryptoPunk, you get a "One Day I'll Be A Punk"-Punk
         // CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
-        // bool hasPunk = cryptopunks.balanceOf(msg.sender) > 0;
-        // // TODO: If hasPunk === false, then mint OneDayPunk
+        OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
+        if (
+            // cryptopunks.balanceOf(msg.sender) == 0 &&
+            oneDayPunk.balanceOf(msg.sender) == 0
+        ) {
+            oneDayPunk.mint(msg.sender);
+        }
 
-        jalil.transfer(msg.value);
-
+        // Mint the new token
         uint256 newScape = randomIndex();
-
         _safeMint(msg.sender, newScape);
+
+        // Make me rich
+        jalil.transfer(msg.value);
     }
 
     // TODO: Mint up to 50 at once
