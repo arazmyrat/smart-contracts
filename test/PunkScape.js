@@ -4,11 +4,11 @@ const { expect } = require('chai')
 const { ethers, waffle } = require('hardhat')
 const { nowInUTCSeconds, daysInSeconds } = require('./../helpers/time')
 
-describe('PunkScape Contract', async () => {
-  const PRICE = parseUnits('0.02', 'ether')
-  const CID = 'IPFS_CID_HASH'
-  const START_SALE = (await ethers.provider.getBlock('latest')).timestamp
+const PRICE = parseUnits('0.02', 'ether')
+const CID = 'IPFS_CID_HASH'
+let START_SALE
 
+describe('PunkScape Contract', async () => {
   let OneDayPunk,
       oneDayPunkContract,
       PunkScape,
@@ -18,6 +18,10 @@ describe('PunkScape Contract', async () => {
       buyer1,
       buyer2,
       addrs
+
+  before(async () => {
+    START_SALE = (await ethers.provider.getBlock('latest')).timestamp
+  })
 
   beforeEach(async () => {
     OneDayPunk = await ethers.getContractFactory('OneDayPunk');
@@ -91,7 +95,7 @@ describe('PunkScape Contract', async () => {
     })
 
     describe('Mint', () => {
-      it.only('Wallets should be able to mint a scape', async () => {
+      it('Wallets should be able to mint a scape', async () => {
         const transaction = await contract.connect(buyer1).mint({ value: PRICE })
         const receipt = await transaction.wait()
         tokenId = receipt.events?.find(
