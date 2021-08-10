@@ -2,13 +2,13 @@ const { parseUnits } = require('ethers/lib/utils')
 const { AddressZero } = require('ethers/lib/ethers')
 const { expect } = require('chai')
 const { ethers, waffle } = require('hardhat')
-const { nowInSeconds, daysInSeconds } = require('./../helpers/time')
+const { nowInUTCSeconds, daysInSeconds } = require('./../helpers/time')
 
-const PRICE = parseUnits('0.02', 'ether')
-const CID = 'IPFS_CID_HASH'
-const START_SALE = nowInSeconds() - 10
+describe('PunkScape Contract', async () => {
+  const PRICE = parseUnits('0.02', 'ether')
+  const CID = 'IPFS_CID_HASH'
+  const START_SALE = (await ethers.provider.getBlock('latest')).timestamp
 
-describe('PunkScape Contract', () => {
   let OneDayPunk,
       oneDayPunkContract,
       PunkScape,
@@ -26,9 +26,6 @@ describe('PunkScape Contract', () => {
 
     // Deploy the smart contract
     oneDayPunkContract = await OneDayPunk.deploy(CID, 'https://punkscape.xyz/contract-meta')
-
-    console.log(oneDayPunkContract.address)
-    console.log(oneDayPunkContract.address)
 
     contract = await PunkScape.deploy(
       jalil.address,
@@ -74,21 +71,19 @@ describe('PunkScape Contract', () => {
       })
 
       it('Should not mint if sale hasn\'t started yet', async () => {
-        await contract.connect(owner).setSaleStart(nowInSeconds() + daysInSeconds(1))
+        await contract.connect(owner).setSaleStart(nowInUTCSeconds() + daysInSeconds(1))
 
         await expect(contract.connect(buyer1).mint({ value: PRICE }))
           .to.be.revertedWith('Sale hasn\'t started yet')
       })
 
-      it.only('Should allow mint if sale has started', async () => {
-        await contract.connect(owner).setSaleStart(nowInSeconds() - daysInSeconds(1))
-
+      it('Should allow mint if sale has started', async () => {
         await expect(contract.connect(buyer1).mint({ value: PRICE }))
           .to.emit(contract, 'Transfer')
       })
 
       it('Should emit SaleStartChanged when the sale start changes', async () => {
-        const time = nowInSeconds() + daysInSeconds(1)
+        const time = nowInUTCSeconds() + daysInSeconds(1)
         await expect(contract.connect(owner).setSaleStart(time))
           .to.emit(contract, 'SaleStartChanged')
           .withArgs(time)
@@ -96,10 +91,12 @@ describe('PunkScape Contract', () => {
     })
 
     describe('Mint', () => {
-      it('Wallets should be able to mint a scape', async () => {
+      it.only('Wallets should be able to mint a scape', async () => {
         const transaction = await contract.connect(buyer1).mint({ value: PRICE })
         const receipt = await transaction.wait()
-        tokenId = receipt.events?.find(e => e.event === 'Transfer').args.tokenId
+        tokenId = receipt.events?.find(
+          e => e.event === 'Transfer' && e.address === contract.address
+        ).args.tokenId
 
         expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
 
@@ -156,7 +153,9 @@ describe('PunkScape Contract', () => {
       const transaction = await contract.connect(buyer1).mint({ value: PRICE })
       const receipt = await transaction.wait()
 
-      tokenId = receipt.events?.find(e => e.event === 'Transfer').args.tokenId
+      tokenId = receipt.events?.find(
+        e => e.event === 'Transfer' && e.address === contract.address
+      ).args.tokenId
     })
 
     describe('Show Scape', () => {
