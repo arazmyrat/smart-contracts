@@ -5,17 +5,28 @@ const { ethers, waffle } = require('hardhat')
 describe('OneDayPunk Contract', async () => {
   const CID = 'IPFS_CID_HASH'
 
-  let OneDayPunk,
+  let CheckAddresses,
+      library,
+      OneDayPunk,
       contract,
       owner,
-      jalil,
       buyer1,
       buyer2,
       addrs
 
+  before(async () => {
+    CheckAddresses = await ethers.getContractFactory('CheckAddresses');
+    library = await CheckAddresses.deploy()
+  })
+
   beforeEach(async () => {
-    OneDayPunk = await ethers.getContractFactory('OneDayPunk');
+    OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
+      libraries: {
+        CheckAddresses: library.address,
+      },
+    });
     [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
+
 
     // Deploy the smart contract
     contract = await OneDayPunk.deploy(CID, 'https://punkPunk.xyz/onedaypunk-meta')
@@ -62,6 +73,12 @@ describe('OneDayPunk Contract', async () => {
 
         await contract.connect(buyer2).claim()
         expect(await contract.count()).to.equal(2)
+      })
+
+      it('Wallets should be can only mint one token', async () => {
+        await contract.connect(buyer1).claim()
+        await expect(contract.connect(buyer1).claim())
+                    .to.be.revertedWith('Can only hold one token per wallet')
       })
 
       it.skip('Sells 10000, then fails on further tries', async () => {
@@ -119,6 +136,15 @@ describe('OneDayPunk Contract', async () => {
         await contract.connect(buyer1).transferFrom(buyer1.address, buyer2.address, tokenId)
 
         expect(await contract.ownerOf(tokenId)).to.equal(buyer2.address)
+      })
+
+      it('Should not be able to transfer a Punk to a wallet that already has one', async () => {
+        await (await contract.connect(buyer2).claim()).wait()
+
+        await expect(contract.connect(buyer1).transferFrom(buyer1.address, buyer2.address, tokenId))
+          .to.be.revertedWith('Can only hold one token per wallet')
+
+        expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
       })
     })
   })

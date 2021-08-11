@@ -9,7 +9,9 @@ const CID = 'IPFS_CID_HASH'
 let START_SALE
 
 describe('PunkScape Contract', async () => {
-  let OneDayPunk,
+  let CheckAddresses,
+      checkAddressesLibrary,
+      OneDayPunk,
       oneDayPunkContract,
       PunkScape,
       contract,
@@ -21,10 +23,17 @@ describe('PunkScape Contract', async () => {
 
   before(async () => {
     START_SALE = (await ethers.provider.getBlock('latest')).timestamp
+
+    CheckAddresses = await ethers.getContractFactory('CheckAddresses');
+    checkAddressesLibrary = await CheckAddresses.deploy()
   })
 
   beforeEach(async () => {
-    OneDayPunk = await ethers.getContractFactory('OneDayPunk');
+    OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
+      libraries: {
+        CheckAddresses: checkAddressesLibrary.address,
+      },
+    });
     PunkScape = await ethers.getContractFactory('PunkScape');
     [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
 
