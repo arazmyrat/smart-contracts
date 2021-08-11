@@ -71,7 +71,7 @@ contract PunkScape is
             cryptopunks.balanceOf(msg.sender) == 0 &&
             oneDayPunk.balanceOf(msg.sender) == 0
         ) {
-            oneDayPunk.mint(msg.sender);
+            oneDayPunk.claimFor(msg.sender);
         }
 
         // Mint the new token

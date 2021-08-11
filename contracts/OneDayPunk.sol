@@ -50,10 +50,11 @@ contract OneDayPunk is
     }
 
     // Claim a "One Day I'll Be A Punk"-Punk to a specific address
-    function mint(address to) external {
+    function claimFor(address to) external {
         _claim(to);
     }
 
+    // Claims a token for a specific address.
     function _claim (address to) internal ensureAvailability onePerWallet(to) {
         CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
         require(cryptopunks.balanceOf(to) == 0, "You lucky one already have a CryptoPunk.");
