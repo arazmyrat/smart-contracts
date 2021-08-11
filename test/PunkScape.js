@@ -6,6 +6,7 @@ const { nowInUTCSeconds, daysInSeconds } = require('./../helpers/time')
 
 const PRICE = parseUnits('0.02', 'ether')
 const CID = 'IPFS_CID_HASH'
+const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
 let START_SALE
 
 describe('PunkScape Contract', async () => {
@@ -19,13 +20,21 @@ describe('PunkScape Contract', async () => {
       jalil,
       buyer1,
       buyer2,
-      addrs
+      addrs,
+      larbalabs
 
   before(async () => {
     START_SALE = (await ethers.provider.getBlock('latest')).timestamp
 
     CheckAddresses = await ethers.getContractFactory('CheckAddresses');
     checkAddressesLibrary = await CheckAddresses.deploy()
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [LARVA_LABS],
+    })
+
+    larvaLabs = await ethers.getSigner(LARVA_LABS)
   })
 
   beforeEach(async () => {
@@ -104,7 +113,9 @@ describe('PunkScape Contract', async () => {
     })
 
     describe('Mint', () => {
-      it('Wallets should be able to mint a scape', async () => {
+      it.only('Wallets should be able to mint a scape with a one day punk', async () => {
+        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
+
         const transaction = await contract.connect(buyer1).mint({ value: PRICE })
         const receipt = await transaction.wait()
         tokenId = receipt.events?.find(
@@ -112,9 +123,26 @@ describe('PunkScape Contract', async () => {
         ).args.tokenId
 
         expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
+        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
 
+        // Create another punkscape for buyer1; should still only have one OneDayPunk
+        await contract.connect(buyer1).mint({ value: PRICE })
+        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
+
+        // Check that another address can also mint scapes
         await expect(contract.connect(buyer2).mint({ value: PRICE }))
-                    .to.emit(contract, 'Transfer')
+                                             .to.emit(contract, 'Transfer')
+      })
+
+      it.only('Holders of CryptoPunks should be able to mint a scape without a one day punk', async () => {
+        const transaction = await contract.connect(larvaLabs).mint({ value: PRICE })
+        const receipt = await transaction.wait()
+        tokenId = receipt.events?.find(
+          e => e.event === 'Transfer' && e.address === contract.address
+        ).args.tokenId
+
+        expect(await contract.ownerOf(tokenId)).to.equal(larvaLabs.address)
+        expect(await oneDayPunkContract.balanceOf(larvaLabs.address)).to.equal(0)
       })
 
       it('Fails if transaction value is less than 0.02 ETH', async () => {
