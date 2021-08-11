@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "./../utils/CheckAddresses.sol";
+import "@1001-digital/check-address/contracts/CheckAddress.sol";
 
 // =======================================================================
 // ADJUST LOGIC FOR BALANCE AND OWNED
@@ -13,7 +13,7 @@ abstract contract OnePerWallet is ERC721 {
 
     // Only allow one nim per wallet
     modifier onePerWallet(address wallet) {
-        if (CheckAddresses.isExternal(wallet)) {
+        if (CheckAddress.isExternal(wallet)) {
             require(balanceOf(wallet) == 0, "Can only hold one token per wallet");
         }
 

@@ -5,7 +5,7 @@ const { ethers, waffle } = require('hardhat')
 describe('OneDayPunk Contract', async () => {
   const CID = 'IPFS_CID_HASH'
 
-  let CheckAddresses,
+  let CheckAddress,
       library,
       OneDayPunk,
       contract,
@@ -15,14 +15,14 @@ describe('OneDayPunk Contract', async () => {
       addrs
 
   before(async () => {
-    CheckAddresses = await ethers.getContractFactory('CheckAddresses');
-    library = await CheckAddresses.deploy()
+    CheckAddress = await ethers.getContractFactory('CheckAddress');
+    library = await CheckAddress.deploy()
   })
 
   beforeEach(async () => {
     OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
       libraries: {
-        CheckAddresses: library.address,
+        CheckAddress: library.address,
       },
     });
     [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()

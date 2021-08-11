@@ -10,8 +10,8 @@ const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
 let START_SALE
 
 describe('PunkScape Contract', async () => {
-  let CheckAddresses,
-      checkAddressesLibrary,
+  let CheckAddress,
+      checkAddressLibrary,
       OneDayPunk,
       oneDayPunkContract,
       PunkScape,
@@ -26,8 +26,8 @@ describe('PunkScape Contract', async () => {
   before(async () => {
     START_SALE = (await ethers.provider.getBlock('latest')).timestamp
 
-    CheckAddresses = await ethers.getContractFactory('CheckAddresses');
-    checkAddressesLibrary = await CheckAddresses.deploy()
+    CheckAddress = await ethers.getContractFactory('CheckAddress');
+    checkAddressLibrary = await CheckAddress.deploy()
 
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
@@ -40,7 +40,7 @@ describe('PunkScape Contract', async () => {
   beforeEach(async () => {
     OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
       libraries: {
-        CheckAddresses: checkAddressesLibrary.address,
+        CheckAddress: checkAddressLibrary.address,
       },
     });
     PunkScape = await ethers.getContractFactory('PunkScape');
