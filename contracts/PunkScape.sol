@@ -60,9 +60,11 @@ contract PunkScape is
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
-    // Mint one PunkScape
-    function mint() external payable afterSaleStart ensureAvailability {
-        require(msg.value >= price, "Sorry it is 0.02ETH, friend");
+    // Mint multiple PunkScapes
+    function mint(uint256 amount) external payable afterSaleStart ensureAvailability {
+        require(amount > 0, "Have to mint at least one punkscape.");
+        require(amount <= 50, "Can't mint more than 50 punkscapes per transaction.");
+        require(msg.value >= (price * amount), "Pay up, friend - it's 0.02 ETH per PunkScape");
 
         // If you don't have a CryptoPunk, you get a "One Day I'll Be A Punk"-Punk
         CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
@@ -74,15 +76,15 @@ contract PunkScape is
             oneDayPunk.claimFor(msg.sender);
         }
 
-        // Mint the new token
-        uint256 newScape = randomIndex();
-        _safeMint(msg.sender, newScape);
+        // Mint the new tokens
+        for (uint256 index = 0; index < amount; index++) {
+            uint256 newScape = randomIndex();
+            _safeMint(msg.sender, newScape);
+        }
 
         // Make it rain
         beneficiary.transfer(msg.value);
     }
-
-    // TODO: Mint up to 50 at once
 
     // Get the tokenURI for a specific token
     function tokenURI(uint256 tokenId)

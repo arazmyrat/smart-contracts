@@ -95,12 +95,12 @@ describe('PunkScape Contract', async () => {
       it('Should not mint if sale hasn\'t started yet', async () => {
         await contract.connect(owner).setSaleStart(nowInUTCSeconds() + daysInSeconds(1))
 
-        await expect(contract.connect(buyer1).mint({ value: PRICE }))
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
           .to.be.revertedWith('Sale hasn\'t started yet')
       })
 
       it('Should allow mint if sale has started', async () => {
-        await expect(contract.connect(buyer1).mint({ value: PRICE }))
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
           .to.emit(contract, 'Transfer')
       })
 
@@ -113,10 +113,10 @@ describe('PunkScape Contract', async () => {
     })
 
     describe('Mint', () => {
-      it.only('Wallets should be able to mint a scape with a one day punk', async () => {
+      it('Wallets should be able to mint a scape with a one day punk', async () => {
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
 
-        const transaction = await contract.connect(buyer1).mint({ value: PRICE })
+        const transaction = await contract.connect(buyer1).mint(1, { value: PRICE })
         const receipt = await transaction.wait()
         tokenId = receipt.events?.find(
           e => e.event === 'Transfer' && e.address === contract.address
@@ -126,16 +126,18 @@ describe('PunkScape Contract', async () => {
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
 
         // Create another punkscape for buyer1; should still only have one OneDayPunk
-        await contract.connect(buyer1).mint({ value: PRICE })
+        await contract.connect(buyer1).mint(1, { value: PRICE })
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
+        expect(await contract.balanceOf(buyer1.address)).to.equal(2)
 
         // Check that another address can also mint scapes
-        await expect(contract.connect(buyer2).mint({ value: PRICE }))
+        await expect(contract.connect(buyer2).mint(1, { value: PRICE }))
                                              .to.emit(contract, 'Transfer')
+        expect(await contract.balanceOf(buyer2.address)).to.equal(1)
       })
 
-      it.only('Holders of CryptoPunks should be able to mint a scape without a one day punk', async () => {
-        const transaction = await contract.connect(larvaLabs).mint({ value: PRICE })
+      it('Holders of CryptoPunks should be able to mint a scape without a one day punk', async () => {
+        const transaction = await contract.connect(larvaLabs).mint(1, { value: PRICE })
         const receipt = await transaction.wait()
         tokenId = receipt.events?.find(
           e => e.event === 'Transfer' && e.address === contract.address
@@ -145,9 +147,34 @@ describe('PunkScape Contract', async () => {
         expect(await oneDayPunkContract.balanceOf(larvaLabs.address)).to.equal(0)
       })
 
-      it('Fails if transaction value is less than 0.02 ETH', async () => {
-        await expect(contract.connect(buyer1).mint({ value: PRICE.sub(10) }))
-                    .to.be.revertedWith(`Sorry it is 0.02ETH, friend`)
+      it('Should allow to mint multiple PunkScapes in one transaction', async () => {
+        const transaction = await contract.connect(buyer1).mint(40, { value: PRICE.mul(40) })
+        const receipt = await transaction.wait()
+        events = receipt.events?.filter(
+          e => e.event === 'Transfer' && e.address === contract.address
+        )
+
+        expect(events.length).to.equal(40)
+        expect(await contract.balanceOf(buyer1.address)).to.equal(40)
+        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
+      })
+
+      it('Fails if transaction value is less than 0.02 ETH per punkscape', async () => {
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE.sub(10) }))
+                    .to.be.revertedWith(`Pay up, friend - it's 0.02 ETH per PunkScape`)
+
+        await expect(contract.connect(buyer1).mint(40, { value: PRICE.mul(39) }))
+                    .to.be.revertedWith(`Pay up, friend - it's 0.02 ETH per PunkScape`)
+
+        expect(await contract.balanceOf(buyer1.address)).to.equal(0)
+      })
+
+      it('Fails if amount isn\'t allowed', async () => {
+        await expect(contract.connect(buyer1).mint(0, { value: PRICE }))
+                    .to.be.revertedWith(`Have to mint at least one punkscape.`)
+
+        await expect(contract.connect(buyer1).mint(51, { value: PRICE.mul(51) }))
+                    .to.be.revertedWith(`Can't mint more than 50 punkscapes per transaction.`)
 
         expect(await contract.balanceOf(buyer1.address)).to.equal(0)
       })
@@ -155,10 +182,10 @@ describe('PunkScape Contract', async () => {
       it('Updates the sold count', async () => {
         expect(await contract.count()).to.equal(0)
 
-        await contract.connect(buyer1).mint({ value: PRICE })
+        await contract.connect(buyer1).mint(1, { value: PRICE })
         expect(await contract.count()).to.equal(1)
 
-        await contract.connect(buyer2).mint({ value: PRICE })
+        await contract.connect(buyer2).mint(1, { value: PRICE })
         expect(await contract.count()).to.equal(2)
       })
 
@@ -170,7 +197,7 @@ describe('PunkScape Contract', async () => {
         while (sold < 10000) {
           wallet = waffle.provider.createEmptyWallet()
           await owner.sendTransaction({ to: wallet.address, value: PRICE.mul(2) })
-          await contract.connect(wallet).mint({ value: PRICE })
+          await contract.connect(wallet).mint(1, { value: PRICE })
           sold ++
           if (sold % 500 === 0) {
             console.log(`          === ${sold} SOLD ===`)
@@ -180,7 +207,7 @@ describe('PunkScape Contract', async () => {
 
         expect(await contract.ScapeCount()).to.equal(10000)
 
-        await expect(contract.connect(buyer1).mint({ value: PRICE }))
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
                     .to.be.revertedWith('No more Scapes available')
       })
     })
@@ -191,7 +218,7 @@ describe('PunkScape Contract', async () => {
     let tokenId
 
     beforeEach(async () => {
-      const transaction = await contract.connect(buyer1).mint({ value: PRICE })
+      const transaction = await contract.connect(buyer1).mint(1, { value: PRICE })
       const receipt = await transaction.wait()
 
       tokenId = receipt.events?.find(
