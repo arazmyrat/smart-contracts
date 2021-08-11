@@ -21,7 +21,7 @@ describe('PunkScape Contract', async () => {
       buyer1,
       buyer2,
       addrs,
-      larbalabs
+      larvaLabs
 
   before(async () => {
     START_SALE = (await ethers.provider.getBlock('latest')).timestamp
