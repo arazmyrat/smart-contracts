@@ -177,6 +177,15 @@ describe('PunkScape Contract', async () => {
                     .to.be.revertedWith(`Can't mint more than 50 punkscapes per transaction.`)
 
         expect(await contract.balanceOf(buyer1.address)).to.equal(0)
+
+        // Try to mint more than 200
+        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        expect(await contract.balanceOf(buyer1.address)).to.equal(200)
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
+                    .to.be.revertedWith(`I love you, but 200 PunkScapes is enough to start with :-)`)
       })
 
       it('Updates the sold count', async () => {

@@ -65,6 +65,7 @@ contract PunkScape is
         require(amount > 0, "Have to mint at least one punkscape.");
         require(amount <= 50, "Can't mint more than 50 punkscapes per transaction.");
         require(msg.value >= (price * amount), "Pay up, friend - it's 0.02 ETH per PunkScape");
+        require((balanceOf(msg.sender) + amount) <= 200, "I love you, but 200 PunkScapes is enough to start with :-)");
 
         // If you don't have a CryptoPunk, you get a "One Day I'll Be A Punk"-Punk
         CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
