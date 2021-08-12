@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-
 import "./extensions/SetsSaleStart.sol";
 import "./extensions/HasContractMetaData.sol";
 import "./extensions/WithFees.sol";
-import "./extensions/RandomlyAssigned.sol";
 import "./extensions/HasIPFSMetaData.sol";
 
 import "./CryptoPunkInterface.sol";
@@ -53,6 +52,7 @@ contract PunkScape is
     )
         ERC721("PunkScape", "SCAPE")
         SetsSaleStart(_saleStart)
+        RandomlyAssigned(10000, 0)
         WithFees(_jalil, 250)
         HasContractMetaData(_contractMetaDataURI)
         HasIPFSMetaData(_cid)
@@ -79,7 +79,7 @@ contract PunkScape is
 
         // Mint the new tokens
         for (uint256 index = 0; index < amount; index++) {
-            uint256 newScape = randomIndex();
+            uint256 newScape = nextToken();
             _safeMint(msg.sender, newScape);
         }
 

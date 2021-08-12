@@ -64,7 +64,7 @@ describe('PunkScape Contract', async () => {
     })
 
     it('Should set the total supply of 10000 tokens', async () => {
-      expect(await contract.MAX_COUNT()).to.equal(10000)
+      expect(await contract.maxSupply()).to.equal(10000)
     })
 
     it('Should set the right contract meta data URL', async () => {
@@ -189,13 +189,13 @@ describe('PunkScape Contract', async () => {
       })
 
       it('Updates the sold count', async () => {
-        expect(await contract.count()).to.equal(0)
+        expect(await contract.tokenCount()).to.equal(0)
 
         await contract.connect(buyer1).mint(1, { value: PRICE })
-        expect(await contract.count()).to.equal(1)
+        expect(await contract.tokenCount()).to.equal(1)
 
         await contract.connect(buyer2).mint(1, { value: PRICE })
-        expect(await contract.count()).to.equal(2)
+        expect(await contract.tokenCount()).to.equal(2)
       })
 
       it.skip('Sells 10000, then fails on further tries', async () => {
