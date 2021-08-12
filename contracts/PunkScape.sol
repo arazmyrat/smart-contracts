@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
+import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
+import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
+import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
-import "./extensions/HasContractMetaData.sol";
-import "./extensions/WithFees.sol";
 
 import "./CryptoPunkInterface.sol";
 import "./OneDayPunk.sol";
@@ -33,7 +32,7 @@ contract PunkScape is
     WithSaleStart,
     WithIPFSMetaData,
     RandomlyAssigned,
-    HasContractMetaData,
+    WithContractMetaData,
     WithFees
 {
     using Counters for Counters.Counter;
@@ -54,7 +53,7 @@ contract PunkScape is
         WithSaleStart(_saleStart)
         RandomlyAssigned(10000, 0)
         WithFees(_jalil, 250)
-        HasContractMetaData(_contractMetaDataURI)
+        WithContractMetaData(_contractMetaDataURI)
         WithIPFSMetaData(_cid)
     {
         oneDayPunkAddress = _oneDayPunkAddress;
