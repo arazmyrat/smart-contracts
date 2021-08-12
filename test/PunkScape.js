@@ -263,6 +263,10 @@ describe('PunkScape Contract', async () => {
         expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
       })
 
+      it('Correctly links to the tokenURI', async () => {
+        expect(await contract.tokenURI(tokenId)).to.equal(`ipfs://${CID}/${tokenId}.json`)
+      })
+
       it('Should not show a Scape for non-holders', async () => {
         const otherTokenId = tokenId === 9999 ? tokenId - 1 : tokenId + 1
 

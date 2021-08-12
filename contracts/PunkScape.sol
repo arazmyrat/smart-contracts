@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +11,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./extensions/HasContractMetaData.sol";
 import "./extensions/WithFees.sol";
-import "./extensions/HasIPFSMetaData.sol";
 
 import "./CryptoPunkInterface.sol";
 import "./OneDayPunk.sol";
@@ -31,7 +31,7 @@ contract PunkScape is
     ERC721,
     Ownable,
     WithSaleStart,
-    HasIPFSMetaData,
+    WithIPFSMetaData,
     RandomlyAssigned,
     HasContractMetaData,
     WithFees
@@ -55,7 +55,7 @@ contract PunkScape is
         RandomlyAssigned(10000, 0)
         WithFees(_jalil, 250)
         HasContractMetaData(_contractMetaDataURI)
-        HasIPFSMetaData(_cid)
+        WithIPFSMetaData(_cid)
     {
         oneDayPunkAddress = _oneDayPunkAddress;
     }
@@ -89,18 +89,18 @@ contract PunkScape is
 
     // Get the tokenURI for a specific token
     function tokenURI(uint256 tokenId)
-        public view override(HasIPFSMetaData, ERC721)
+        public view override(WithIPFSMetaData, ERC721)
         returns (string memory)
     {
-        return HasIPFSMetaData.tokenURI(tokenId);
+        return WithIPFSMetaData.tokenURI(tokenId);
     }
 
     // Configure the baseURI for the tokenURI method.
     function _baseURI()
-        internal view override(HasIPFSMetaData, ERC721)
+        internal view override(WithIPFSMetaData, ERC721)
         returns (string memory)
     {
-        return HasIPFSMetaData._baseURI();
+        return WithIPFSMetaData._baseURI();
     }
 
     // We support the `HasSecondarySalesFees` Interface
