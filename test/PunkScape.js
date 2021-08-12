@@ -88,18 +88,41 @@ describe('PunkScape Contract', async () => {
 
   describe('Public Sale', () => {
     describe('SaleStart', () => {
+      let futureSaleStart
+
+      beforeEach(async () => {
+        futureSaleStart = (await ethers.provider.getBlock('latest')).timestamp + 180
+
+        contract = await PunkScape.deploy(
+          jalil.address,
+          CID,
+          futureSaleStart,
+          'https://punkscape.xyz/contract-meta',
+          oneDayPunkContract.address
+        )
+      })
+
       it('Should expose the saleStart time', async () => {
-        expect(await contract.saleStart()).to.equal(START_SALE)
+        expect(await contract.saleStart()).to.equal(futureSaleStart)
+      })
+
+      it('Should be able to change sale start before the sale has started', async () => {
+        await contract.connect(owner).setSaleStart(nowInUTCSeconds() + daysInSeconds(1))
+      })
+
+      it('Should not be able to change sale start after the sale has started', async () => {
+        await contract.connect(owner).setSaleStart(START_SALE)
+        await expect(contract.connect(owner).setSaleStart(nowInUTCSeconds() - daysInSeconds(1)))
+          .to.be.revertedWith('Sale has already started')
       })
 
       it('Should not mint if sale hasn\'t started yet', async () => {
-        await contract.connect(owner).setSaleStart(nowInUTCSeconds() + daysInSeconds(1))
-
         await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
           .to.be.revertedWith('Sale hasn\'t started yet')
       })
 
       it('Should allow mint if sale has started', async () => {
+        await contract.connect(owner).setSaleStart(START_SALE)
         await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
           .to.emit(contract, 'Transfer')
       })

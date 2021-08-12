@@ -2,12 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
+import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-import "./extensions/SetsSaleStart.sol";
 import "./extensions/HasContractMetaData.sol";
 import "./extensions/WithFees.sol";
 import "./extensions/HasIPFSMetaData.sol";
@@ -30,7 +30,7 @@ import "./OneDayPunk.sol";
 contract PunkScape is
     ERC721,
     Ownable,
-    SetsSaleStart,
+    WithSaleStart,
     HasIPFSMetaData,
     RandomlyAssigned,
     HasContractMetaData,
@@ -51,7 +51,7 @@ contract PunkScape is
         address _oneDayPunkAddress
     )
         ERC721("PunkScape", "SCAPE")
-        SetsSaleStart(_saleStart)
+        WithSaleStart(_saleStart)
         RandomlyAssigned(10000, 0)
         WithFees(_jalil, 250)
         HasContractMetaData(_contractMetaDataURI)
