@@ -34,7 +34,7 @@ describe('OneDayPunk Contract', async () => {
 
   describe('Deployment', () => {
     it('Should set the total supply of 10000 tokens', async () => {
-      expect(await contract.maxCount()).to.equal(10000)
+      expect(await contract.maxSupply()).to.equal(10000)
     })
 
     it('Should set the right contract meta data URL', async () => {
@@ -66,13 +66,13 @@ describe('OneDayPunk Contract', async () => {
       })
 
       it('Updates the sold count', async () => {
-        expect(await contract.count()).to.equal(0)
+        expect(await contract.tokenCount()).to.equal(0)
 
         await contract.connect(buyer1).claim()
-        expect(await contract.count()).to.equal(1)
+        expect(await contract.tokenCount()).to.equal(1)
 
         await contract.connect(buyer2).claim()
-        expect(await contract.count()).to.equal(2)
+        expect(await contract.tokenCount()).to.equal(2)
       })
 
       it('Wallets should be can only mint one token', async () => {

@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@1001-digital/erc721-extensions/contracts/LinearlyAssigned.sol";
+import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
+import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
+import "@1001-digital/erc721-extensions/contracts/OnePerWallet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-
-import "./extensions/HasContractMetaData.sol";
-import "./extensions/WithLimitedTokenSupply.sol";
-import "./extensions/OnePerWallet.sol";
-import "./extensions/HasIPFSMetaData.sol";
 
 import "./CryptoPunkInterface.sol";
 
@@ -26,10 +25,10 @@ import "./CryptoPunkInterface.sol";
 
 contract OneDayPunk is
     ERC721,
-    HasIPFSMetaData,
-    WithLimitedTokenSupply,
     OnePerWallet,
-    HasContractMetaData
+    LinearlyAssigned,
+    WithIPFSMetaData,
+    WithContractMetaData
 {
     address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
 
@@ -39,9 +38,9 @@ contract OneDayPunk is
         string memory _contractMetaDataURI
     )
         ERC721("OneDayPunk", "ODP")
-        WithLimitedTokenSupply(10000)
-        HasIPFSMetaData(_cid)
-        HasContractMetaData(_contractMetaDataURI)
+        LinearlyAssigned(10000, 0)
+        WithIPFSMetaData(_cid)
+        WithContractMetaData(_contractMetaDataURI)
     {}
 
     // Claim a "One Day I'll Be A Punk"-Punk
@@ -66,18 +65,18 @@ contract OneDayPunk is
 
     // Get the tokenURI for a specific token
     function tokenURI(uint256 tokenId)
-        public view override(HasIPFSMetaData, ERC721)
+        public view override(WithIPFSMetaData, ERC721)
         returns (string memory)
     {
-        return HasIPFSMetaData.tokenURI(tokenId);
+        return WithIPFSMetaData.tokenURI(tokenId);
     }
 
     // Configure the baseURI for the tokenURI method.
     function _baseURI()
-        internal view override(HasIPFSMetaData, ERC721)
+        internal view override(WithIPFSMetaData, ERC721)
         returns (string memory)
     {
-        return HasIPFSMetaData._baseURI();
+        return WithIPFSMetaData._baseURI();
     }
 
     // Mark OnePerWallet implementation as override for ERC721, OnePerWallet
