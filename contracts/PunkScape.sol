@@ -73,7 +73,8 @@ contract PunkScape is
         OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
         if (
             cryptopunks.balanceOf(msg.sender) == 0 &&
-            oneDayPunk.balanceOf(msg.sender) == 0
+            oneDayPunk.balanceOf(msg.sender) == 0 &&
+            oneDayPunk.availableTokenCount() > 0
         ) {
             oneDayPunk.claimFor(msg.sender);
         }
