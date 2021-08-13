@@ -1,5 +1,4 @@
 const { parseUnits } = require('ethers/lib/utils')
-const { AddressZero } = require('ethers/lib/ethers')
 const { expect } = require('chai')
 const { ethers, waffle } = require('hardhat')
 const { nowInUTCSeconds, daysInSeconds } = require('./../helpers/time')
@@ -243,8 +242,27 @@ describe('PunkScape Contract', async () => {
                     .to.be.revertedWith('No more Scapes available')
       })
     })
-  })
 
+    describe('Withdrawals', () => {
+      it('Should allow the owner to withdraw funds stored in the contract', async () => {
+        const ownerBalance = await ethers.provider.getBalance(owner.address)
+        expect(await ethers.provider.getBalance(contract.address)).to.equal(0)
+
+        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+
+        expect(await ethers.provider.getBalance(contract.address)).to.equal(PRICE.mul(100))
+
+        // No funds sent to the owner yet.
+        expect(await ethers.provider.getBalance(owner.address)).to.equal(ownerBalance)
+
+        await expect(await contract.connect(owner).withdraw()).to.changeEtherBalance(owner, PRICE.mul(100))
+
+        // No funds left in contract
+        expect(await ethers.provider.getBalance(contract.address)).to.equal(0)
+      })
+    })
+  })
 
   describe('Token Holder', () => {
     let tokenId

@@ -6,6 +6,7 @@ import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
+import "@1001-digital/erc721-extensions/contracts/WithWithdrawals.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -33,6 +34,7 @@ contract PunkScape is
     WithIPFSMetaData,
     RandomlyAssigned,
     WithContractMetaData,
+    WithWithdrawals,
     WithFees
 {
     using Counters for Counters.Counter;
@@ -81,9 +83,6 @@ contract PunkScape is
             uint256 newScape = nextToken();
             _safeMint(msg.sender, newScape);
         }
-
-        // Make it rain
-        beneficiary.transfer(msg.value);
     }
 
     // Get the tokenURI for a specific token
