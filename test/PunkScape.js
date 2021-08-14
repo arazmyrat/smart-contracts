@@ -169,6 +169,23 @@ describe('PunkScape Contract', async () => {
         expect(await oneDayPunkContract.balanceOf(larvaLabs.address)).to.equal(0)
       })
 
+      it('Holders of a OneDayPunk should be able to mint a scape without a one day punk', async () => {
+        // buyer has a one day punk
+        await oneDayPunkContract.connect(buyer1).claim()
+        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
+
+        const transaction = await contract.connect(buyer1).mint(1, { value: PRICE })
+        const receipt = await transaction.wait()
+        tokenId = receipt.events?.find(
+          e => e.event === 'Transfer' && e.address === contract.address
+        ).args.tokenId
+
+        expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
+
+        // Buyer still has only one one day punk
+        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
+      })
+
       it('Should allow to mint multiple PunkScapes in one transaction', async () => {
         const transaction = await contract.connect(buyer1).mint(40, { value: PRICE.mul(40) })
         const receipt = await transaction.wait()
@@ -232,11 +249,11 @@ describe('PunkScape Contract', async () => {
           sold ++
           if (sold % 500 === 0) {
             console.log(`          === ${sold} SOLD ===`)
-            expect(await contract.ScapeCount()).to.equal(sold)
+            expect(await contract.tokenCount()).to.equal(sold)
           }
         }
 
-        expect(await contract.ScapeCount()).to.equal(10000)
+        expect(await contract.tokenCount()).to.equal(10000)
 
         await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
                     .to.be.revertedWith('No more Scapes available')

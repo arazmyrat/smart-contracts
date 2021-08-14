@@ -93,11 +93,11 @@ describe('OneDayPunk Contract', async () => {
           sold ++
           if (sold % 500 === 0) {
             console.log(`          === ${sold} SOLD ===`)
-            expect(await contract.PunkCount()).to.equal(sold)
+            expect(await contract.tokenCount()).to.equal(sold)
           }
         }
 
-        expect(await contract.PunkCount()).to.equal(10000)
+        expect(await contract.tokenCount()).to.equal(10000)
 
         await expect(contract.connect(buyer1).claim())
                     .to.be.revertedWith('No more Punks available')
