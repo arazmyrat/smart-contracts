@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
+import "@1001-digital/erc721-extensions/contracts/LinearlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
@@ -32,7 +32,7 @@ contract PunkScape is
     Ownable,
     WithSaleStart,
     WithIPFSMetaData,
-    RandomlyAssigned,
+    LinearlyAssigned,
     WithContractMetaData,
     WithWithdrawals,
     WithFees
@@ -53,7 +53,7 @@ contract PunkScape is
     )
         ERC721("PunkScape", "SCAPE")
         WithSaleStart(_saleStart)
-        RandomlyAssigned(10000, 0)
+        LinearlyAssigned(10000, 0)
         WithFees(_jalil, 250)
         WithContractMetaData(_contractMetaDataURI)
         WithIPFSMetaData(_cid)

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@1001-digital/erc721-extensions/contracts/LinearlyAssigned.sol";
+import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/OnePerWallet.sol";
@@ -25,7 +25,7 @@ import "./CryptoPunkInterface.sol";
 contract OneDayPunk is
     ERC721,
     OnePerWallet,
-    LinearlyAssigned,
+    RandomlyAssigned,
     WithIPFSMetaData,
     WithContractMetaData
 {
@@ -37,7 +37,7 @@ contract OneDayPunk is
         string memory _contractMetaDataURI
     )
         ERC721("OneDayPunk", "ODP")
-        LinearlyAssigned(10000, 0)
+        RandomlyAssigned(10000, 0)
         WithIPFSMetaData(_cid)
         WithContractMetaData(_contractMetaDataURI)
     {}
