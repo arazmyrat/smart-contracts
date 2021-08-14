@@ -282,7 +282,7 @@ describe('PunkScape Contract', async () => {
       })
 
       it('Correctly links to the tokenURI', async () => {
-        expect(await contract.tokenURI(tokenId)).to.equal(`ipfs://${CID}/${tokenId}.json`)
+        expect(await contract.tokenURI(tokenId)).to.equal(`ipfs://${CID}/${tokenId}/metadata.json`)
       })
 
       it('Should not show a Scape for non-holders', async () => {
