@@ -34,7 +34,7 @@ describe('OneDayPunk Contract', async () => {
 
   describe('Deployment', () => {
     it('Should set the total supply of 10000 tokens', async () => {
-      expect(await contract.maxSupply()).to.equal(10000)
+      expect(await contract.totalSupply()).to.equal(10000)
     })
 
     it('Should set the right contract meta data URL', async () => {
