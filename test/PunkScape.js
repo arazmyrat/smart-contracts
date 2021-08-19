@@ -169,7 +169,7 @@ describe('PunkScape Contract', async () => {
         expect(await oneDayPunkContract.balanceOf(larvaLabs.address)).to.equal(0)
       })
 
-      it('Holders of a OneDayPunk should be able to mint a scape without a one day punk', async () => {
+      it.only('Holders of a OneDayPunk should be able to mint a scape without a one day punk', async () => {
         // buyer has a one day punk
         await oneDayPunkContract.connect(buyer1).claim()
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)

@@ -1,4 +1,3 @@
-const { parseUnits } = require('ethers/lib/utils')
 const { expect } = require('chai')
 const { ethers, waffle } = require('hardhat')
 
