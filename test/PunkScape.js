@@ -187,14 +187,14 @@ describe('PunkScape Contract', async () => {
       })
 
       it('Should allow to mint multiple PunkScapes in one transaction', async () => {
-        const transaction = await contract.connect(buyer1).mint(40, { value: PRICE.mul(40) })
+        const transaction = await contract.connect(buyer1).mint(15, { value: PRICE.mul(15) })
         const receipt = await transaction.wait()
         events = receipt.events?.filter(
           e => e.event === 'Transfer' && e.address === contract.address
         )
 
-        expect(events.length).to.equal(40)
-        expect(await contract.balanceOf(buyer1.address)).to.equal(40)
+        expect(events.length).to.equal(15)
+        expect(await contract.balanceOf(buyer1.address)).to.equal(15)
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
       })
 
@@ -202,7 +202,7 @@ describe('PunkScape Contract', async () => {
         await expect(contract.connect(buyer1).mint(1, { value: PRICE.sub(10) }))
                     .to.be.revertedWith(`Pay up, friend - it's 0.02 ETH per PunkScape`)
 
-        await expect(contract.connect(buyer1).mint(40, { value: PRICE.mul(39) }))
+        await expect(contract.connect(buyer1).mint(20, { value: PRICE.mul(19) }))
                     .to.be.revertedWith(`Pay up, friend - it's 0.02 ETH per PunkScape`)
 
         expect(await contract.balanceOf(buyer1.address)).to.equal(0)
@@ -213,18 +213,17 @@ describe('PunkScape Contract', async () => {
                     .to.be.revertedWith(`Have to mint at least one punkscape.`)
 
         await expect(contract.connect(buyer1).mint(51, { value: PRICE.mul(51) }))
-                    .to.be.revertedWith(`Can't mint more than 50 punkscapes per transaction.`)
+                    .to.be.revertedWith(`Can't mint more than 20 punkscapes per transaction.`)
 
         expect(await contract.balanceOf(buyer1.address)).to.equal(0)
 
         // Try to mint more than 200
-        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
-        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
-        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
-        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        for (let index = 0; index < 10; index++) {
+          await contract.connect(buyer1).mint(20, { value: PRICE.mul(20) })
+        }
         expect(await contract.balanceOf(buyer1.address)).to.equal(200)
         await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
-                    .to.be.revertedWith(`I love you, but 200 PunkScapes is enough to start with :-)`)
+                    .to.be.revertedWith(`Feeling the love, but 200 PunkScapes is enough to start with :-)`)
       })
 
       it('Updates the sold count', async () => {
@@ -265,15 +264,15 @@ describe('PunkScape Contract', async () => {
         const ownerBalance = await ethers.provider.getBalance(owner.address)
         expect(await ethers.provider.getBalance(contract.address)).to.equal(0)
 
-        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
-        await contract.connect(buyer1).mint(50, { value: PRICE.mul(50) })
+        await contract.connect(buyer1).mint(20, { value: PRICE.mul(20) })
+        await contract.connect(buyer1).mint(20, { value: PRICE.mul(20) })
 
-        expect(await ethers.provider.getBalance(contract.address)).to.equal(PRICE.mul(100))
+        expect(await ethers.provider.getBalance(contract.address)).to.equal(PRICE.mul(40))
 
         // No funds sent to the owner yet.
         expect(await ethers.provider.getBalance(owner.address)).to.equal(ownerBalance)
 
-        await expect(await contract.connect(owner).withdraw()).to.changeEtherBalance(owner, PRICE.mul(100))
+        await expect(await contract.connect(owner).withdraw()).to.changeEtherBalance(owner, PRICE.mul(40))
 
         // No funds left in contract
         expect(await ethers.provider.getBalance(contract.address)).to.equal(0)
