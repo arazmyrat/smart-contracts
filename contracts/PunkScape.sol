@@ -10,7 +10,6 @@ import "@1001-digital/erc721-extensions/contracts/WithWithdrawals.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./CryptoPunkInterface.sol";
 import "./OneDayPunk.sol";
@@ -37,8 +36,6 @@ contract PunkScape is
     WithWithdrawals,
     WithFees
 {
-    using Counters for Counters.Counter;
-
     uint256 public price = 0.02 ether;
     address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
     address private oneDayPunkAddress;
