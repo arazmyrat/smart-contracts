@@ -1,8 +1,10 @@
 const { expect } = require('chai')
+const { BigNumber } = require('ethers')
 const { ethers, waffle } = require('hardhat')
 
 describe('OneDayPunk Contract', async () => {
   const CID = 'IPFS_CID_HASH'
+  const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
 
   let CheckAddress,
       library,
@@ -11,11 +13,19 @@ describe('OneDayPunk Contract', async () => {
       owner,
       buyer1,
       buyer2,
-      addrs
+      addrs,
+      larvalabs
 
   before(async () => {
     CheckAddress = await ethers.getContractFactory('CheckAddress');
     library = await CheckAddress.deploy()
+
+    await hre.network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [LARVA_LABS],
+    })
+
+    larvaLabs = await ethers.getSigner(LARVA_LABS)
   })
 
   beforeEach(async () => {
@@ -64,6 +74,11 @@ describe('OneDayPunk Contract', async () => {
                     .to.emit(contract, 'Transfer')
       })
 
+      it('Doesn\'t allow CryptoPunk holders to get a Punk', async () => {
+        await expect(contract.connect(larvaLabs).claim())
+          .to.be.revertedWith('You lucky one already have a CryptoPunk.')
+      })
+
       it('Updates the sold count', async () => {
         expect(await contract.tokenCount()).to.equal(0)
 
@@ -80,17 +95,19 @@ describe('OneDayPunk Contract', async () => {
                     .to.be.revertedWith('Can only hold one token per wallet')
       })
 
-      it.skip('Sells 10000, then fails on further tries', async () => {
+      it.only('Sells 10000, then fails on further tries', async () => {
         let sold = 0
-        let wallet
+        const wallets = await Promise.all(Array.from({ length: 10000 }).map((_) => {
+          wallet = waffle.provider.createEmptyWallet()
+          return owner.sendTransaction({ to: wallet.address, value: BigNumber.from('1882703627751798096') })
+        }))
 
         console.log(`         Started selling`)
         while (sold < 10000) {
-          wallet = waffle.provider.createEmptyWallet()
-          await owner.sendTransaction({ to: wallet.address, value: PRICE.mul(2) })
-          await contract.connect(wallet).claim()
+          await contract.connect(wallets[sold]).claim()
           sold ++
-          if (sold % 500 === 0) {
+          console.log(sold)
+          if (sold % 50 === 0) {
             console.log(`          === ${sold} SOLD ===`)
             expect(await contract.tokenCount()).to.equal(sold)
           }
