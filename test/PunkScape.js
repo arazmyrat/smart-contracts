@@ -28,6 +28,12 @@ describe('PunkScape Contract', async () => {
     CheckAddress = await ethers.getContractFactory('CheckAddress');
     checkAddressLibrary = await CheckAddress.deploy()
 
+    OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
+      libraries: {
+        CheckAddress: checkAddressLibrary.address,
+      },
+    })
+
     await hre.network.provider.request({
       method: 'hardhat_impersonateAccount',
       params: [LARVA_LABS],
@@ -37,11 +43,6 @@ describe('PunkScape Contract', async () => {
   })
 
   beforeEach(async () => {
-    OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
-      libraries: {
-        CheckAddress: checkAddressLibrary.address,
-      },
-    });
     PunkScape = await ethers.getContractFactory('PunkScape');
     [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
 
