@@ -2,6 +2,8 @@ const { expect } = require('chai')
 const { BigNumber } = require('ethers')
 const { ethers, waffle } = require('hardhat')
 
+const networkConfig = hre.config.networks[hre.network.name]
+
 describe('OneDayPunk Contract', async () => {
   const CID = 'IPFS_CID_HASH'
   const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
@@ -25,7 +27,7 @@ describe('OneDayPunk Contract', async () => {
       params: [LARVA_LABS],
     })
 
-    larvaLabs = await ethers.getSigner(LARVA_LABS)
+    larvalabs = await ethers.getSigner(LARVA_LABS)
   })
 
   beforeEach(async () => {
@@ -38,7 +40,7 @@ describe('OneDayPunk Contract', async () => {
 
 
     // Deploy the smart contract
-    contract = await OneDayPunk.deploy(CID, 'https://punkPunk.xyz/onedaypunk-meta')
+    contract = await OneDayPunk.deploy(CID, 'https://punkPunk.xyz/onedaypunk-meta', networkConfig.CryptoPunksAddress)
   })
 
   describe('Deployment', () => {
@@ -75,7 +77,7 @@ describe('OneDayPunk Contract', async () => {
       })
 
       it('Doesn\'t allow CryptoPunk holders to get a Punk', async () => {
-        await expect(contract.connect(larvaLabs).claim())
+        await expect(contract.connect(larvalabs).claim())
           .to.be.revertedWith('You lucky one already have a CryptoPunk.')
       })
 
@@ -95,18 +97,17 @@ describe('OneDayPunk Contract', async () => {
                     .to.be.revertedWith('Can only hold one token per wallet')
       })
 
-      it.only('Sells 10000, then fails on further tries', async () => {
+      it.skip('Sells 10000, then fails on further tries', async () => {
         let sold = 0
-        const wallets = await Promise.all(Array.from({ length: 10000 }).map((_) => {
-          wallet = waffle.provider.createEmptyWallet()
-          return owner.sendTransaction({ to: wallet.address, value: BigNumber.from('1882703627751798096') })
-        }))
+        let wallet
 
         console.log(`         Started selling`)
         while (sold < 10000) {
-          await contract.connect(wallets[sold]).claim()
+          wallet = waffle.provider.createEmptyWallet()
+          // await owner.sendTransaction({ to: wallet.address, value: BigNumber.from('500000000000000000') })
+          await owner.sendTransaction({ to: wallet.address, value: BigNumber.from('1882718463484087040') })
+          await contract.connect(wallet).claim()
           sold ++
-          console.log(sold)
           if (sold % 50 === 0) {
             console.log(`          === ${sold} SOLD ===`)
             expect(await contract.tokenCount()).to.equal(sold)
@@ -116,7 +117,7 @@ describe('OneDayPunk Contract', async () => {
         expect(await contract.tokenCount()).to.equal(10000)
 
         await expect(contract.connect(buyer1).claim())
-                    .to.be.revertedWith('No more Punks available')
+                    .to.be.revertedWith('No more tokens available')
       })
     })
   })

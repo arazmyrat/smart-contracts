@@ -2,7 +2,9 @@ const { parseUnits } = require('ethers/lib/utils')
 const { expect } = require('chai')
 const { ethers, waffle } = require('hardhat')
 const { nowInUTCSeconds, daysInSeconds } = require('./../helpers/time')
+const { BigNumber } = require('ethers')
 
+const networkConfig = hre.config.networks[hre.network.name]
 const PRICE = parseUnits('0.02', 'ether')
 const CID = 'IPFS_CID_HASH'
 const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
@@ -47,13 +49,18 @@ describe('PunkScape Contract', async () => {
     [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
 
     // Deploy the smart contract
-    oneDayPunkContract = await OneDayPunk.deploy(CID, 'https://punkscape.xyz/contract-meta')
+    oneDayPunkContract = await OneDayPunk.deploy(
+      CID,
+      'https://punkscape.xyz/contract-meta',
+      networkConfig.CryptoPunksAddress
+    )
 
     contract = await PunkScape.deploy(
       jalil.address,
       CID,
       START_SALE,
       'https://punkscape.xyz/contract-meta',
+      networkConfig.CryptoPunksAddress,
       oneDayPunkContract.address
     )
   })
@@ -98,6 +105,7 @@ describe('PunkScape Contract', async () => {
           CID,
           futureSaleStart,
           'https://punkscape.xyz/contract-meta',
+          networkConfig.CryptoPunksAddress,
           oneDayPunkContract.address
         )
       })
@@ -244,10 +252,10 @@ describe('PunkScape Contract', async () => {
         console.log(`         Started selling`)
         while (sold < 10000) {
           wallet = waffle.provider.createEmptyWallet()
-          await owner.sendTransaction({ to: wallet.address, value: PRICE.mul(2) })
+          await owner.sendTransaction({ to: wallet.address, value: BigNumber.from('1714794122122458976') })
           await contract.connect(wallet).mint(1, { value: PRICE })
           sold ++
-          if (sold % 500 === 0) {
+          if (sold % 50 === 0) {
             console.log(`          === ${sold} SOLD ===`)
             expect(await contract.tokenCount()).to.equal(sold)
           }
@@ -256,7 +264,7 @@ describe('PunkScape Contract', async () => {
         expect(await contract.tokenCount()).to.equal(10000)
 
         await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
-                    .to.be.revertedWith('No more Scapes available')
+                    .to.be.revertedWith('No more tokens available')
       })
     })
 

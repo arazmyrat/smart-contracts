@@ -37,7 +37,7 @@ contract PunkScape is
     WithFees
 {
     uint256 public price = 0.02 ether;
-    address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
+    address private cryptoPunksAddress;
     address private oneDayPunkAddress;
 
     // Instantiate the PunkScape Contract
@@ -46,6 +46,7 @@ contract PunkScape is
         string memory _cid,
         uint256 _saleStart,
         string memory _contractMetaDataURI,
+        address _cryptoPunksAddress,
         address _oneDayPunkAddress
     )
         ERC721("PunkScape", "SCAPE")
@@ -55,6 +56,7 @@ contract PunkScape is
         WithContractMetaData(_contractMetaDataURI)
         WithIPFSMetaData(_cid)
     {
+        cryptoPunksAddress = _cryptoPunksAddress;
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
@@ -66,7 +68,7 @@ contract PunkScape is
         require((balanceOf(msg.sender) + amount) <= 200, "Feeling the love, but 200 PunkScapes is enough to start with :-)");
 
         // If you don't have a CryptoPunk, you get a "One Day I'll Be A Punk"-Punk
-        CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
+        CryptoPunks cryptopunks = CryptoPunks(cryptoPunksAddress);
         OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
         if (
             cryptopunks.balanceOf(msg.sender) == 0 &&

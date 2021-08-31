@@ -30,18 +30,21 @@ contract OneDayPunk is
     WithIPFSMetaData,
     WithContractMetaData
 {
-    address private cryptopunksAddress = 0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB;
+    address private cryptoPunksAddress;
 
     // Instantiate the PunkScape Contract
     constructor(
         string memory _cid,
-        string memory _contractMetaDataURI
+        string memory _contractMetaDataURI,
+        address _cryptopunksAddress
     )
         ERC721("OneDayPunk", "ODP")
         RandomlyAssigned(10000, 0)
         WithIPFSMetaData(_cid)
         WithContractMetaData(_contractMetaDataURI)
-    {}
+    {
+        cryptoPunksAddress = _cryptopunksAddress;
+    }
 
     // Claim a "One Day I'll Be A Punk"-Punk
     function claim() external {
@@ -55,7 +58,7 @@ contract OneDayPunk is
 
     // Claims a token for a specific address.
     function _claim (address to) internal ensureAvailability onePerWallet(to) {
-        CryptoPunks cryptopunks = CryptoPunks(cryptopunksAddress);
+        CryptoPunks cryptopunks = CryptoPunks(cryptoPunksAddress);
         require(cryptopunks.balanceOf(to) == 0, "You lucky one already have a CryptoPunk.");
 
         uint256 next = nextToken();
