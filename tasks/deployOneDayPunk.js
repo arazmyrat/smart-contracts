@@ -1,12 +1,10 @@
 task('deployOneDayPunk', `Deploys the OneDayPunk.sol Contract`)
-  .setAction(async ({
-  }) => {
+  .setAction(async () => {
     const [deployer] = await ethers.getSigners()
-    console.log('network', hre.network.name)
     const networkConfig = hre.config.networks[hre.network.name]
 
     console.log('Deploying contracts with the account:', deployer.address)
-    console.log('Account balance:', (await deployer.getBalance()).toString())
+    console.log('Account Balance:', (await deployer.getBalance()).toString())
     console.log('MetaData CID:', process.env.METADATA_CID)
     console.log('Contract Metadata URL:', process.env.CONTRACT_METADATA_URL)
     console.log('CryptoPunk Contract Address:', networkConfig.CryptoPunksAddress)
@@ -20,5 +18,5 @@ task('deployOneDayPunk', `Deploys the OneDayPunk.sol Contract`)
       networkConfig.CryptoPunksAddress
     )
 
-    console.log('OneDayPunk contract address:', contract.address)
+    console.log('OneDayPunk Contract Address:', contract.address)
   })
