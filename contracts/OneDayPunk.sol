@@ -20,8 +20,8 @@ import "./CryptoPunkInterface.sol";
 //                                                                                                                        //
 // ====================================================================================================================== //
 //                                           10k "ONE DAY I'LL BE A PUNK"-punks                                           //
-//                                                 to all that aim high                                                   //
 //                                              limited to one per address                                                //
+//                                                    aim high, fren!                                                     //
 // ====================================================================================================================== //
 contract OneDayPunk is
     ERC721,
@@ -38,7 +38,7 @@ contract OneDayPunk is
         string memory _contractMetaDataURI,
         address _cryptopunksAddress
     )
-        ERC721("OneDayPunk", unicode"𝕆")
+        ERC721("OneDayPunk", "ODP")
         RandomlyAssigned(10000, 0)
         WithIPFSMetaData(_cid)
         WithContractMetaData(_contractMetaDataURI)
