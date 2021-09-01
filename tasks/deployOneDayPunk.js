@@ -6,7 +6,7 @@ task('deployOneDayPunk', `Deploys the OneDayPunk.sol Contract`)
     console.log('Deploying contracts with the account:', deployer.address)
     console.log('Account Balance:', (await deployer.getBalance()).toString())
     console.log('MetaData CID:', process.env.METADATA_CID)
-    console.log('Contract Metadata URL:', process.env.CONTRACT_METADATA_URL)
+    console.log('Contract Metadata URL:', process.env.ONEDAY_CONTRACT_METADATA_URL)
     console.log('CryptoPunk Contract Address:', networkConfig.CryptoPunksAddress)
 
     const OneDayPunk = await ethers.getContractFactory('OneDayPunk', {
@@ -14,7 +14,7 @@ task('deployOneDayPunk', `Deploys the OneDayPunk.sol Contract`)
     })
     const contract = await OneDayPunk.deploy(
       process.env.METADATA_CID,
-      process.env.CONTRACT_METADATA_URL,
+      process.env.ONEDAY_CONTRACT_METADATA_URL,
       networkConfig.CryptoPunksAddress
     )
 

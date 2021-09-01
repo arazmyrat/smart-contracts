@@ -12,7 +12,7 @@ async function main () {
     process.env.BENEFICIARY_WALLET,
     process.env.METADATA_CID,
     process.env.START_TIME,
-    process.env.CONTRACT_METADATA_URL,
+    process.env.SCAPES_CONTRACT_METADATA_URL,
   )
 
   console.log('PunkScape contract address:', contract.address)
