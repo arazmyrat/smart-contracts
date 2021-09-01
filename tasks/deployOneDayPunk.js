@@ -5,7 +5,7 @@ task('deployOneDayPunk', `Deploys the OneDayPunk.sol Contract`)
 
     console.log('Deploying contracts with the account:', deployer.address)
     console.log('Account Balance:', (await deployer.getBalance()).toString())
-    console.log('MetaData CID:', process.env.METADATA_CID)
+    console.log('MetaData CID:', process.env.ONEDAY_METADATA_CID)
     console.log('Contract Metadata URL:', process.env.ONEDAY_CONTRACT_METADATA_URL)
     console.log('CryptoPunk Contract Address:', networkConfig.CryptoPunksAddress)
 
@@ -13,7 +13,7 @@ task('deployOneDayPunk', `Deploys the OneDayPunk.sol Contract`)
       libraries: networkConfig.libraries,
     })
     const contract = await OneDayPunk.deploy(
-      process.env.METADATA_CID,
+      process.env.ONEDAY_METADATA_CID,
       process.env.ONEDAY_CONTRACT_METADATA_URL,
       networkConfig.CryptoPunksAddress
     )

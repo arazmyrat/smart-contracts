@@ -5,12 +5,12 @@ async function main () {
   console.log('Account balance:', (await deployer.getBalance()).toString())
   console.log('Sale start:', process.env.START_TIME)
   console.log('Beneficiary Wallet:', process.env.BENEFICIARY_WALLET)
-  console.log('MetaData CID:', process.env.METADATA_CID)
+  console.log('MetaData CID:', process.env.SCAPES_METADATA_CID)
 
   const PunkScape = await ethers.getContractFactory('PunkScape')
   const contract = await PunkScape.deploy(
     process.env.BENEFICIARY_WALLET,
-    process.env.METADATA_CID,
+    process.env.SCAPES_METADATA_CID,
     process.env.START_TIME,
     process.env.SCAPES_CONTRACT_METADATA_URL,
   )
