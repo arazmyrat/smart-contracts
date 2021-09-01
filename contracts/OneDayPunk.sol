@@ -38,7 +38,7 @@ contract OneDayPunk is
         string memory _contractMetaDataURI,
         address _cryptopunksAddress
     )
-        ERC721("OneDayPunk", "ODP")
+        ERC721("OneDayPunk", unicode"𝕆")
         RandomlyAssigned(10000, 0)
         WithIPFSMetaData(_cid)
         WithContractMetaData(_contractMetaDataURI)
