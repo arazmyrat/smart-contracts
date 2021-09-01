@@ -49,7 +49,7 @@ contract PunkScape is
         address _cryptoPunksAddress,
         address _oneDayPunkAddress
     )
-        ERC721("PunkScape", "SCAPE")
+        ERC721("PunkScape", unicode"🌆")
         WithSaleStart(_saleStart)
         LinearlyAssigned(10000, 0)
         WithFees(_jalil, 250)
