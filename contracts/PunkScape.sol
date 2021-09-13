@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@1001-digital/erc721-extensions/contracts/LinearlyAssigned.sol";
+import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
@@ -31,7 +31,7 @@ contract PunkScape is
     Ownable,
     WithSaleStart,
     WithIPFSMetaData,
-    LinearlyAssigned,
+    RandomlyAssigned,
     WithContractMetaData,
     WithWithdrawals,
     WithFees
@@ -39,6 +39,7 @@ contract PunkScape is
     uint256 public price = 0.02 ether;
     address private cryptoPunksAddress;
     address private oneDayPunkAddress;
+    mapping(uint256 => uint256) public oneDayPunkToPunkScape;
 
     // Instantiate the PunkScape Contract
     constructor(
@@ -51,7 +52,7 @@ contract PunkScape is
     )
         ERC721("PunkScape", unicode"🌆")
         WithSaleStart(_saleStart)
-        LinearlyAssigned(10000, 0)
+        RandomlyAssigned(10000, 1)
         WithFees(_punkscape, 250)
         WithContractMetaData(_contractMetaDataURI)
         WithIPFSMetaData(_cid)
@@ -60,23 +61,39 @@ contract PunkScape is
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
-    // Mint multiple PunkScapes
-    function mint(uint256 amount) external payable afterSaleStart ensureAvailability {
+    function mint(uint256 amount) external payable afterSaleStart ensureAvailabilityFor(amount) {
         require(amount > 0, "Have to mint at least one punkscape.");
-        require(amount <= 20, "Can't mint more than 20 punkscapes per transaction.");
-        require(msg.value >= (price * amount), "Pay up, friend - it's 0.02 ETH per PunkScape");
-        require((balanceOf(msg.sender) + amount) <= 200, "Feeling the love, but 200 PunkScapes is enough to start with :-)");
-
-        // If you don't have a CryptoPunk, you get a "One Day I'll Be A Punk"-Punk
-        CryptoPunks cryptopunks = CryptoPunks(cryptoPunksAddress);
+        require(amount <= 3, "Can't mint more than 3 punkscapes per transaction.");
+        require(msg.value >= (price * amount), "Pay up, friend - it's 0.02 ETH per PunkScape.");
         OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
-        if (
-            cryptopunks.balanceOf(msg.sender) == 0 &&
-            oneDayPunk.balanceOf(msg.sender) == 0 &&
-            oneDayPunk.availableTokenCount() > 0
-        ) {
-            oneDayPunk.claimFor(msg.sender);
+
+        // During the initial 618 minutes only ODPs can mint.
+        if (block.timestamp < (saleStart() + 618 * 60)) {
+            uint256 odp = oneDayPunk.tokenOf(msg.sender);
+            require(
+                odp >= 0,
+                "You have to own a OneDayPunk to mint during the initial claiming window."
+            );
+            require(
+                amount == 1 &&
+                oneDayPunkToPunkScape[odp] == 0,
+                "Can only claim one punkscape."
+            );
+
+            // We'll mint these tokens, so safe to set this.
+            uint256 newScape = nextToken();
+            oneDayPunkToPunkScape[odp] = newScape;
+            _safeMint(msg.sender, newScape);
+            return;
         }
+
+        // Afterwards both CryptoPunk owners and OneDayPunk owners can mint up to 3 per transaction
+        CryptoPunks cryptoPunks = CryptoPunks(cryptoPunksAddress);
+        require(
+            oneDayPunk.balanceOf(msg.sender) == 1 ||
+            cryptoPunks.balanceOf(msg.sender) >= 1,
+            "You have to own a CryptoPunk or a OneDayPunk to mint a PunkScape"
+        );
 
         // Mint the new tokens
         for (uint256 index = 0; index < amount; index++) {

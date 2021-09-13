@@ -144,41 +144,14 @@ describe('PunkScape Contract', async () => {
     })
 
     describe('Mint', () => {
-      it('Wallets should be able to mint a scape with a one day punk', async () => {
+      it('Wallets (w/o ODPs) should not be able to mint a scape', async () => {
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
 
-        const transaction = await contract.connect(buyer1).mint(1, { value: PRICE })
-        const receipt = await transaction.wait()
-        tokenId = receipt.events?.find(
-          e => e.event === 'Transfer' && e.address === contract.address
-        ).args.tokenId
-
-        expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
-        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
-
-        // Create another punkscape for buyer1; should still only have one OneDayPunk
-        await contract.connect(buyer1).mint(1, { value: PRICE })
-        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
-        expect(await contract.balanceOf(buyer1.address)).to.equal(2)
-
-        // Check that another address can also mint scapes
-        await expect(contract.connect(buyer2).mint(1, { value: PRICE }))
-                                             .to.emit(contract, 'Transfer')
-        expect(await contract.balanceOf(buyer2.address)).to.equal(1)
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
+          .to.be.revertedWith("You have to own a OneDayPunk to mint during the initial claiming window.")
       })
 
-      it('Holders of CryptoPunks should be able to mint a scape without a one day punk', async () => {
-        const transaction = await contract.connect(larvaLabs).mint(1, { value: PRICE })
-        const receipt = await transaction.wait()
-        tokenId = receipt.events?.find(
-          e => e.event === 'Transfer' && e.address === contract.address
-        ).args.tokenId
-
-        expect(await contract.ownerOf(tokenId)).to.equal(larvaLabs.address)
-        expect(await oneDayPunkContract.balanceOf(larvaLabs.address)).to.equal(0)
-      })
-
-      it('Holders of a OneDayPunk should be able to mint a scape without a one day punk', async () => {
+      it.only('Holders of a OneDayPunk should be able to mint one scape during initial claiming phase', async () => {
         // buyer has a one day punk
         await oneDayPunkContract.connect(buyer1).claim()
         expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
@@ -191,8 +164,21 @@ describe('PunkScape Contract', async () => {
 
         expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
 
-        // Buyer still has only one one day punk
-        expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
+        await expect(contract.connect(buyer1).mint(1, { value: PRICE }))
+          .to.be.revertedWith("Can only claim one punkscape.")
+
+        // TODO: only one scape during claiming phase
+      })
+
+      it('Holders of CryptoPunks should not be able to mint a scape during initial claiming phase', async () => {
+        const transaction = await contract.connect(larvaLabs).mint(1, { value: PRICE })
+        const receipt = await transaction.wait()
+        tokenId = receipt.events?.find(
+          e => e.event === 'Transfer' && e.address === contract.address
+        ).args.tokenId
+
+        expect(await contract.ownerOf(tokenId)).to.equal(larvaLabs.address)
+        expect(await oneDayPunkContract.balanceOf(larvaLabs.address)).to.equal(0)
       })
 
       it('Should allow to mint multiple PunkScapes in one transaction', async () => {
