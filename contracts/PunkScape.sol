@@ -42,7 +42,7 @@ contract PunkScape is
 
     // Instantiate the PunkScape Contract
     constructor(
-        address payable _jalil,
+        address payable _punkscape,
         string memory _cid,
         uint256 _saleStart,
         string memory _contractMetaDataURI,
@@ -52,7 +52,7 @@ contract PunkScape is
         ERC721("PunkScape", unicode"🌆")
         WithSaleStart(_saleStart)
         LinearlyAssigned(10000, 0)
-        WithFees(_jalil, 250)
+        WithFees(_punkscape, 250)
         WithContractMetaData(_contractMetaDataURI)
         WithIPFSMetaData(_cid)
     {
