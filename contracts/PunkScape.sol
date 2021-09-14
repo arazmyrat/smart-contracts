@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
+import "@1001-digital/erc721-extensions/contracts/WithMarketOffers.sol";
 import "@1001-digital/erc721-extensions/contracts/WithWithdrawals.sol";
 import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
 import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
@@ -29,12 +30,13 @@ import "./OneDayPunk.sol";
 contract PunkScape is
     ERC721,
     Ownable,
+    WithFees,
     WithSaleStart,
+    WithWithdrawals,
     WithIPFSMetaData,
     RandomlyAssigned,
-    WithContractMetaData,
-    WithWithdrawals,
-    WithFees
+    WithMarketOffers,
+    WithContractMetaData
 {
     uint256 public price = 0.028 ether;
     address private cryptoPunksAddress;
@@ -51,11 +53,11 @@ contract PunkScape is
         address _oneDayPunkAddress
     )
         ERC721("PunkScape", unicode"🌆")
+        WithIPFSMetaData(_cid)
+        WithFees(_punkscape, 250)
         WithSaleStart(_saleStart)
         RandomlyAssigned(10000, 1)
-        WithFees(_punkscape, 250)
         WithContractMetaData(_contractMetaDataURI)
-        WithIPFSMetaData(_cid)
     {
         cryptoPunksAddress = _cryptoPunksAddress;
         oneDayPunkAddress = _oneDayPunkAddress;
@@ -144,7 +146,10 @@ contract PunkScape is
     }
 
     // We support the `HasSecondarySalesFees` Interface
-    function supportsInterface(bytes4 interfaceId) public view override(WithFees, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public view override(WithFees, ERC721)
+        returns (bool)
+    {
         return WithFees.supportsInterface(interfaceId);
     }
 }
