@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
-import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
+import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
-import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
 import "@1001-digital/erc721-extensions/contracts/WithWithdrawals.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
+import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./CryptoPunkInterface.sol";
 import "./OneDayPunk.sol";
@@ -36,7 +36,7 @@ contract PunkScape is
     WithWithdrawals,
     WithFees
 {
-    uint256 public price = 0.02 ether;
+    uint256 public price = 0.028 ether;
     address private cryptoPunksAddress;
     address private oneDayPunkAddress;
     mapping(uint256 => uint256) public oneDayPunkToPunkScape;
@@ -61,7 +61,7 @@ contract PunkScape is
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
-    function claimForOneDayPunk () external payable
+    function claimForOneDayPunk() external payable
         afterSaleStart
         ensureAvailability
     {
@@ -71,23 +71,24 @@ contract PunkScape is
         try oneDayPunk.tokenOf(msg.sender) returns (uint256 _odp) {
             odp = _odp;
         } catch (bytes memory) {
-            revert("You have to own a OneDayPunk to claim a PunkScape.");
+            revert(
+                "You have to own a OneDayPunk to claim a PunkScape during the initial 618 minutes"
+            );
         }
 
         require(
-            odp >= 0,
-            "You have to own a OneDayPunk to mint during the initial claiming window."
-        );
-        require(
             oneDayPunkToPunkScape[odp] == 0,
-            "PunkScape for this OneDayPunk has already been claimed."
+            "PunkScape for this OneDayPunk has already been claimed"
         );
 
-        // We'll mint these tokens, so safe to set this.
+        // Get the token ID
         uint256 newScape = nextToken();
+
+        // Redeem the PunkScape for the given OneDayPunk
         oneDayPunkToPunkScape[odp] = newScape;
+
+        // Mint the token
         _safeMint(msg.sender, newScape);
-        return;
     }
 
     function claimAfter618Minutes(uint256 amount) external payable
@@ -95,19 +96,19 @@ contract PunkScape is
     {
         require(
             block.timestamp > (saleStart() + 618 * 60),
-            "General claiming phase starts 618 minutes after sale start."
+            "General claiming phase starts 618 minutes after sale start"
         );
         require(
             amount > 0,
-            "Have to mint at least one PunkScape."
+            "Have to mint at least one PunkScape"
         );
         require(
             amount <= 3,
-            "Can't mint more than 3 PunkScapes per transaction."
+            "Can't mint more than 3 PunkScapes per transaction"
         );
         require(
             msg.value >= (price * amount),
-            "Pay up, friend."
+            "Pay up, friend"
         );
 
         // Both CryptoPunk owners and OneDayPunk owners can mint up to 3 per transaction

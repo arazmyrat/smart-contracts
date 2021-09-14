@@ -5,7 +5,7 @@ const { daysInSeconds, nowInSeconds } = require('./../helpers/time')
 const { BigNumber } = require('ethers')
 
 const networkConfig = hre.config.networks[hre.network.name]
-const PRICE = parseUnits('0.02', 'ether')
+const PRICE = parseUnits('0.028', 'ether')
 const CID = 'IPFS_CID_HASH'
 const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
 let START_SALE
@@ -129,7 +129,7 @@ describe('PunkScape Contract', async () => {
           .to.be.revertedWith('Sale hasn\'t started yet')
 
         await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE }))
-          .to.be.revertedWith('Sale hasn\'t started yet')
+          .to.be.revertedWith('General claiming phase starts 618 minutes after sale start')
       })
 
       it('Should allow mint if sale has started', async () => {
@@ -142,7 +142,7 @@ describe('PunkScape Contract', async () => {
 
         // Can't claim before 618 minutes are over
         await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE }))
-          .to.be.revertedWith(`General claiming phase starts 618 minutes after sale start.`)
+          .to.be.revertedWith(`General claiming phase starts 618 minutes after sale start`)
       })
 
       it('Should emit SaleStartChanged when the sale start changes', async () => {
@@ -159,7 +159,7 @@ describe('PunkScape Contract', async () => {
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
 
           await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape.")
+            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape during the initial 618 minutes")
         })
 
         it('Holders of a OneDayPunk should be able to mint one scape during initial claiming phase', async () => {
@@ -178,7 +178,7 @@ describe('PunkScape Contract', async () => {
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
 
           await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("PunkScape for this OneDayPunk has already been claimed.")
+            .to.be.revertedWith("PunkScape for this OneDayPunk has already been claimed")
 
           // When token is transferred out i still can't redeem a new token
           const transferRequest = oneDayPunkContract.connect(buyer1).transferFrom(buyer1.address, buyer2.address, odp)
@@ -190,11 +190,11 @@ describe('PunkScape Contract', async () => {
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
           expect(await oneDayPunkContract.balanceOf(buyer2.address)).to.equal(1)
           await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape.")
+            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape")
 
           // New ODP holder also can't claim a PunkScape because it has already been claimed for this ODP
           await expect(contract.connect(buyer2).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("PunkScape for this OneDayPunk has already been claimed.")
+            .to.be.revertedWith("PunkScape for this OneDayPunk has already been claimed")
         })
 
         it('Should not allow to claim multiple PunkScapes in one transaction during initial claiming phase', async () => {
@@ -206,7 +206,10 @@ describe('PunkScape Contract', async () => {
 
         it('Holders of CryptoPunks should not be able to mint a scape during initial claiming phase', async () => {
           await expect(contract.connect(larvaLabs).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape.")
+            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape during the initial 618 minutes")
+
+          await expect(contract.connect(larvaLabs).claimAfter618Minutes(1, { value: PRICE }))
+            .to.be.revertedWith('General claiming phase starts 618 minutes after sale start')
         })
 
         it('Updates the sold count', async () => {
@@ -247,22 +250,29 @@ describe('PunkScape Contract', async () => {
           expect(await contract.balanceOf(buyer1.address)).to.equal(3)
         })
 
+        it('Should allow to mint PunkScapes over multiple transactions', async () => {
+          await contract.connect(buyer1).claimAfter618Minutes(3, { value: PRICE.mul(3) })
+          await contract.connect(buyer1).claimAfter618Minutes(3, { value: PRICE.mul(3) })
+          await contract.connect(buyer1).claimAfter618Minutes(3, { value: PRICE.mul(3) })
+          expect(await contract.balanceOf(buyer1.address)).to.equal(9)
+        })
+
         it('Fails if transaction value is less than 0.02 ETH per PunkScape', async () => {
           await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE.sub(10) }))
-                      .to.be.revertedWith(`Pay up, friend.`)
+                      .to.be.revertedWith(`Pay up, friend`)
 
           await expect(contract.connect(buyer1).claimAfter618Minutes(3, { value: PRICE.mul(2) }))
-                      .to.be.revertedWith(`Pay up, friend.`)
+                      .to.be.revertedWith(`Pay up, friend`)
 
           expect(await contract.balanceOf(buyer1.address)).to.equal(0)
         })
 
         it('Fails if amount isn\'t allowed', async () => {
           await expect(contract.connect(buyer1).claimAfter618Minutes(0, { value: PRICE }))
-                      .to.be.revertedWith(`Have to mint at least one PunkScape.`)
+                      .to.be.revertedWith(`Have to mint at least one PunkScape`)
 
           await expect(contract.connect(buyer1).claimAfter618Minutes(4, { value: PRICE.mul(4) }))
-                      .to.be.revertedWith(`Can't mint more than 3 PunkScapes per transaction.`)
+                      .to.be.revertedWith(`Can't mint more than 3 PunkScapes per transaction`)
 
           expect(await contract.balanceOf(buyer1.address)).to.equal(0)
         })

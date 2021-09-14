@@ -32,7 +32,7 @@ contract OneDayPunk is
 {
     address private cryptoPunksAddress;
 
-    // Instantiate the PunkScape Contract
+    // Instantiate the OneDayPunk Contract
     constructor(
         string memory _cid,
         string memory _contractMetaDataURI,
