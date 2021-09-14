@@ -62,22 +62,32 @@ contract PunkScape is
     }
 
     function mint(uint256 amount) external payable afterSaleStart ensureAvailabilityFor(amount) {
-        require(amount > 0, "Have to mint at least one punkscape.");
-        require(amount <= 3, "Can't mint more than 3 punkscapes per transaction.");
+        require(amount > 0, "Have to mint at least one PunkScape.");
+        require(amount <= 3, "Can't mint more than 3 PunkScapes per transaction.");
         require(msg.value >= (price * amount), "Pay up, friend - it's 0.02 ETH per PunkScape.");
         OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
 
         // During the initial 618 minutes only ODPs can mint.
         if (block.timestamp < (saleStart() + 618 * 60)) {
-            uint256 odp = oneDayPunk.tokenOf(msg.sender);
+            uint256 odp;
+
+            try oneDayPunk.tokenOf(msg.sender) returns (uint256 _odp) {
+                odp = _odp;
+            } catch (bytes memory) {
+                revert("You have to own a OneDayPunk to claim a PunkScape.");
+            }
+
             require(
                 odp >= 0,
                 "You have to own a OneDayPunk to mint during the initial claiming window."
             );
             require(
-                amount == 1 &&
+                amount == 1,
+                "Can only claim one PunkScape."
+            );
+            require(
                 oneDayPunkToPunkScape[odp] == 0,
-                "Can only claim one punkscape."
+                "PunkScape for this OneDayPunk has already been claimed."
             );
 
             // We'll mint these tokens, so safe to set this.

@@ -58,7 +58,7 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   mocha: {
-    timeout: 800000,
+    timeout: 5_000_000,
   },
   gasReporter: {
     currency: 'USD',
