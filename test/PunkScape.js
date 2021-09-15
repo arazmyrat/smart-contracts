@@ -388,6 +388,116 @@ describe('PunkScape Contract', async () => {
         expect(await contract.ownerOf(tokenId)).to.equal(buyer2.address)
       })
     })
+
+    describe('Market Offers', () => {
+      const price = ethers.utils.parseEther('2')
+      let seller, buyer;
+
+      beforeEach(async () => {
+        seller = buyer1
+        buyer = buyer2
+        contract.connect(seller)
+      })
+
+      describe('Private Offers', () => {
+        it('Should allow the owner of a token to add a new private offer', async () => {
+          await expect(contract.offerFor(tokenId))
+            .to.be.revertedWith('No active offer for this item')
+
+          expect(await contract.connect(seller).makeOfferTo(tokenId, price, buyer.address))
+            .to.emit(contract, 'OfferCreated')
+            .withArgs(tokenId, price, buyer.address);
+
+          expect(await contract.offerFor(tokenId)).to.eql([ price, buyer.address ])
+        })
+
+        it('Should allow the private buyer to purchase the offered item', async () => {
+          expect(await contract.ownerOf(tokenId)).to.equal(seller.address)
+
+          expect(await contract.connect(seller).makeOfferTo(tokenId, price, buyer.address))
+            .to.emit(contract, 'OfferCreated')
+            .withArgs(tokenId, price, buyer.address);
+
+          await expect(await contract.connect(buyer).buy(tokenId, { value: price }))
+            .to.emit(contract, 'Sale')
+            .withArgs(tokenId, seller.address, buyer.address, price)
+
+          expect(await contract.ownerOf(tokenId)).to.equal(buyer.address)
+        })
+
+        it('Should not allow the any buyer to purchase a privately offered item', async () => {
+          expect(await contract.ownerOf(tokenId)).to.equal(seller.address)
+
+          expect(await contract.connect(seller).makeOfferTo(tokenId, price, buyer.address))
+            .to.emit(contract, 'OfferCreated')
+            .withArgs(tokenId, price, buyer.address);
+
+          const otherBuyer = addrs[0]
+
+          await expect(contract.connect(otherBuyer).buy(tokenId, { value: price }))
+            .to.be.revertedWith(`Can't buy a privately offered item`)
+
+          expect(await contract.ownerOf(tokenId)).to.equal(seller.address)
+        })
+      })
+
+      describe('Public Offers', () => {
+        it('Should allow the owner of a token to add a new offer', async () => {
+          await expect(contract.offerFor(tokenId))
+            .to.be.revertedWith('No active offer for this item')
+
+          expect(await contract.connect(seller).makeOffer(tokenId, price))
+            .to.emit(contract, 'OfferCreated')
+            .withArgs(tokenId, price, ethers.constants.AddressZero);
+
+          expect(await contract.offerFor(tokenId)).to.eql([ price, ethers.constants.AddressZero ])
+        })
+
+        it('Should not allow non-owners to make offers', async () => {
+          await expect(contract.connect(buyer).makeOffer(tokenId, price))
+            .to.be.revertedWith('Caller is neither owner nor approved')
+        })
+
+        it('Should allow a buyer to purchase an offered item', async () => {
+          expect(await contract.ownerOf(tokenId)).to.equal(seller.address)
+
+          await contract.connect(seller).makeOffer(tokenId, price)
+
+          await expect(await contract.connect(buyer).buy(tokenId, { value: price }))
+            .to.emit(contract, 'Sale')
+            .withArgs(tokenId, seller.address, buyer.address, price)
+            .to.emit(contract, 'Transfer')
+            .withArgs(seller.address, buyer.address, tokenId)
+            .to.changeEtherBalance(seller, price, {
+              provider: ethers.getDefaultProvider(),
+            })
+
+          expect(await contract.ownerOf(tokenId)).to.equal(buyer.address)
+        })
+
+        it('Should not allow a buyer to purchase an item offered for less than the set price', async () => {
+          await contract.connect(seller).makeOffer(tokenId, price)
+
+          await expect(contract.connect(buyer).buy(tokenId, { value: price.sub(1) }))
+            .to.be.revertedWith('Price not met')
+        })
+
+        it('Should not allow a buyer to purchase an item that is not offered', async () => {
+          await expect(contract.connect(buyer).buy(tokenId, { value: price }))
+            .to.be.revertedWith('Item not for sale')
+        })
+
+        it('Should allow a seller to cancel an active offer', async () => {
+          await contract.connect(seller).makeOffer(tokenId, price)
+          await expect(contract.connect(seller).cancelOffer(tokenId))
+            .to.emit(contract, 'OfferWithdrawn')
+            .withArgs(tokenId)
+
+          await expect(contract.offerFor(tokenId))
+            .to.be.revertedWith('No active offer for this item')
+        })
+      })
+    })
   })
 
   describe('Update Contract Meta Data', () => {
