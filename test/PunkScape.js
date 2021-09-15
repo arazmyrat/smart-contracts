@@ -224,8 +224,8 @@ describe('PunkScape Contract', async () => {
 
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
           expect(await oneDayPunkContract.balanceOf(buyer2.address)).to.equal(1)
-          await expect(contract.connect(buyer1).claimForOneDayPunk(-1, { value: PRICE }))
-            .to.be.revertedWith("No token for ID")
+          await expect(contract.connect(buyer1).claimForOneDayPunk(0, { value: PRICE }))
+            .to.be.revertedWith("ERC721: owner query for nonexistent token")
 
           // New ODP holder also can't claim a PunkScape because it has already been claimed for this ODP
           await expect(contract.connect(buyer2).claimForOneDayPunk(odp, { value: PRICE }))
