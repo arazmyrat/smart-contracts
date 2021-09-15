@@ -66,24 +66,17 @@ contract PunkScape is
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
-    /// Claim a PunkScape during early access. This only works for OneDayPunk holders.
-    function claimForOneDayPunk() external payable
+    /// Claim a PunkScape for a given OneDayPunk during early access.
+    /// The scape will be sent to the owner of the OneDayPunk.
+    function claimForOneDayPunk(uint256 oneDayPunkId) external payable
         afterSaleStart
         ensureAvailability
     {
         OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
-        uint256 odp;
-
-        try oneDayPunk.tokenOf(msg.sender) returns (uint256 _odp) {
-            odp = _odp;
-        } catch (bytes memory) {
-            revert(
-                "You have to own a OneDayPunk to claim a PunkScape during the initial 618 minutes"
-            );
-        }
+        address owner = oneDayPunk.ownerOf(oneDayPunkId);
 
         require(
-            oneDayPunkToPunkScape[odp] == 0,
+            oneDayPunkToPunkScape[oneDayPunkId] == 0,
             "PunkScape for this OneDayPunk has already been claimed"
         );
 
@@ -91,10 +84,10 @@ contract PunkScape is
         uint256 newScape = nextToken();
 
         // Redeem the PunkScape for the given OneDayPunk
-        oneDayPunkToPunkScape[odp] = newScape;
+        oneDayPunkToPunkScape[oneDayPunkId] = newScape;
 
         // Mint the token
-        _safeMint(msg.sender, newScape);
+        _safeMint(owner, newScape);
     }
 
     /// General claiming phase starts 618 minutes after OneDayPunk sale start. Why?

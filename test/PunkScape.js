@@ -24,6 +24,13 @@ describe('PunkScape Contract', async () => {
       addrs,
       larvaLabs
 
+  const mintOneDayPunkFor = async (buyer) => {
+    const transaction = await oneDayPunkContract.connect(buyer).claim()
+    const receipt = await transaction.wait()
+
+    return receipt.events?.find(e => e.event === 'Transfer').args.tokenId
+  }
+
   before(async () => {
     START_SALE = (await ethers.provider.getBlock('latest')).timestamp
 
@@ -148,7 +155,7 @@ describe('PunkScape Contract', async () => {
       })
 
       it('Should not mint if sale hasn\'t started yet', async () => {
-        await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
+        await expect(contract.connect(buyer1).claimForOneDayPunk(0, { value: PRICE }))
           .to.be.revertedWith('Sale hasn\'t started yet')
 
         await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE }))
@@ -157,10 +164,10 @@ describe('PunkScape Contract', async () => {
 
       it('Should allow mint if sale has started', async () => {
         // Has to own an ODP
-        await oneDayPunkContract.connect(buyer1).claim()
+        const odp = await mintOneDayPunkFor(buyer1)
         // Has to have started sale
         await contract.connect(owner).setSaleStart(START_SALE)
-        await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
+        await expect(contract.connect(buyer1).claimForOneDayPunk(odp, { value: PRICE }))
           .to.emit(contract, 'Transfer')
 
         // Can't claim before 618 minutes are over
@@ -178,11 +185,16 @@ describe('PunkScape Contract', async () => {
 
     describe('Mint', () => {
       describe('Initial 618 minutes', () => {
-        it('Wallets (w/o ODPs) should not be able to mint a scape', async () => {
+        it('Wallets (w/o ODPs) should be able to mint a scape for ODP (holders)', async () => {
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
 
-          await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape during the initial 618 minutes")
+          const odp = await mintOneDayPunkFor(buyer2)
+          const transaction = await contract.connect(buyer1).claimForOneDayPunk(odp, { value: PRICE })
+          const receipt = await transaction.wait()
+          const tokenId = receipt.events?.find(
+            e => e.event === 'Transfer' && e.address === contract.address
+          ).args.tokenId
+          expect(await contract.ownerOf(tokenId)).to.equal(buyer2.address)
         })
 
         it('Holders of a OneDayPunk should be able to mint one scape during initial claiming phase', async () => {
@@ -191,7 +203,7 @@ describe('PunkScape Contract', async () => {
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
           const odp = await oneDayPunkContract.tokenOf(buyer1.address)
 
-          const transaction = await contract.connect(buyer1).claimForOneDayPunk({ value: PRICE })
+          const transaction = await contract.connect(buyer1).claimForOneDayPunk(odp, { value: PRICE })
           const receipt = await transaction.wait()
           tokenId = receipt.events?.find(
             e => e.event === 'Transfer' && e.address === contract.address
@@ -200,7 +212,7 @@ describe('PunkScape Contract', async () => {
           expect(await contract.ownerOf(tokenId)).to.equal(buyer1.address)
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(1)
 
-          await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
+          await expect(contract.connect(buyer1).claimForOneDayPunk(odp, { value: PRICE }))
             .to.be.revertedWith("PunkScape for this OneDayPunk has already been claimed")
 
           // When token is transferred out i still can't redeem a new token
@@ -212,11 +224,11 @@ describe('PunkScape Contract', async () => {
 
           expect(await oneDayPunkContract.balanceOf(buyer1.address)).to.equal(0)
           expect(await oneDayPunkContract.balanceOf(buyer2.address)).to.equal(1)
-          await expect(contract.connect(buyer1).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape")
+          await expect(contract.connect(buyer1).claimForOneDayPunk(-1, { value: PRICE }))
+            .to.be.revertedWith("No token for ID")
 
           // New ODP holder also can't claim a PunkScape because it has already been claimed for this ODP
-          await expect(contract.connect(buyer2).claimForOneDayPunk({ value: PRICE }))
+          await expect(contract.connect(buyer2).claimForOneDayPunk(odp, { value: PRICE }))
             .to.be.revertedWith("PunkScape for this OneDayPunk has already been claimed")
         })
 
@@ -228,23 +240,27 @@ describe('PunkScape Contract', async () => {
         })
 
         it('Holders of CryptoPunks should not be able to mint a scape during initial claiming phase', async () => {
-          await expect(contract.connect(larvaLabs).claimForOneDayPunk({ value: PRICE }))
-            .to.be.revertedWith("You have to own a OneDayPunk to claim a PunkScape during the initial 618 minutes")
-
           await expect(contract.connect(larvaLabs).claimAfter618Minutes(1, { value: PRICE }))
             .to.be.revertedWith('General claiming phase starts 618 minutes after sale start')
         })
 
+        it('Holders of CryptoPunks should be able to mint a scape for an ODP holder during initial claiming phase', async () => {
+          const odp = await mintOneDayPunkFor(buyer1)
+
+          await expect(contract.connect(larvaLabs).claimForOneDayPunk(odp, { value: PRICE }))
+            .to.emit(contract, 'Transfer')
+        })
+
         it('Updates the sold count', async () => {
-          await oneDayPunkContract.connect(buyer1).claim()
-          await oneDayPunkContract.connect(buyer2).claim()
+          const odp1 = await mintOneDayPunkFor(buyer1)
+          const odp2 = await mintOneDayPunkFor(buyer2)
 
           expect(await contract.tokenCount()).to.equal(0)
 
-          await contract.connect(buyer1).claimForOneDayPunk({ value: PRICE })
+          await contract.connect(buyer1).claimForOneDayPunk(odp1, { value: PRICE })
           expect(await contract.tokenCount()).to.equal(1)
 
-          await contract.connect(buyer2).claimForOneDayPunk({ value: PRICE })
+          await contract.connect(buyer2).claimForOneDayPunk(odp2, { value: PRICE })
           expect(await contract.tokenCount()).to.equal(2)
         })
       })
