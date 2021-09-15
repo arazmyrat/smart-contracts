@@ -41,9 +41,12 @@ contract PunkScape is
     uint256 public price = 0.028 ether;
     address private cryptoPunksAddress;
     address private oneDayPunkAddress;
+
+    /// Stores the PunkScape that was claimed during
+    /// early access for each OneDayPunk.
     mapping(uint256 => uint256) public oneDayPunkToPunkScape;
 
-    // Instantiate the PunkScape Contract
+    /// Instantiate the PunkScape Contract
     constructor(
         address payable _punkscape,
         string memory _cid,
@@ -63,6 +66,7 @@ contract PunkScape is
         oneDayPunkAddress = _oneDayPunkAddress;
     }
 
+    /// Claim a PunkScape during early access. This only works for OneDayPunk holders.
     function claimForOneDayPunk() external payable
         afterSaleStart
         ensureAvailability
@@ -93,6 +97,8 @@ contract PunkScape is
         _safeMint(msg.sender, newScape);
     }
 
+    /// General claiming phase starts 618 minutes after OneDayPunk sale start. Why?
+    /// Because that's the amount of time it took for all OneDayPunks to sell out.
     function claimAfter618Minutes(uint256 amount) external payable
         ensureAvailabilityFor(amount)
     {
@@ -129,7 +135,12 @@ contract PunkScape is
         }
     }
 
-    // Get the tokenURI for a specific token
+    /// Allow the contract owner to update the IPFS content identifier until sale starts.
+    function setCID(string memory _cid) external onlyOwner beforeSaleStart {
+        _setCID(_cid);
+    }
+
+    /// Get the tokenURI for a specific token
     function tokenURI(uint256 tokenId)
         public view override(WithIPFSMetaData, ERC721)
         returns (string memory)
@@ -137,7 +148,7 @@ contract PunkScape is
         return WithIPFSMetaData.tokenURI(tokenId);
     }
 
-    // Configure the baseURI for the tokenURI method.
+    /// Configure the baseURI for the tokenURI method
     function _baseURI()
         internal view override(WithIPFSMetaData, ERC721)
         returns (string memory)
@@ -145,7 +156,7 @@ contract PunkScape is
         return WithIPFSMetaData._baseURI();
     }
 
-    // We support the `HasSecondarySalesFees` Interface
+    /// We support the `HasSecondarySalesFees` interface
     function supportsInterface(bytes4 interfaceId)
         public view override(WithFees, ERC721)
         returns (bool)

@@ -18,7 +18,7 @@ describe('PunkScape Contract', async () => {
       PunkScape,
       contract,
       owner,
-      jalil,
+      punkscape,
       buyer1,
       buyer2,
       addrs,
@@ -46,7 +46,7 @@ describe('PunkScape Contract', async () => {
 
   beforeEach(async () => {
     PunkScape = await ethers.getContractFactory('PunkScape');
-    [ owner, jalil, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
+    [ owner, punkscape, buyer1, buyer2, ...addrs ] = await ethers.getSigners()
 
     // Deploy the smart contract
     oneDayPunkContract = await OneDayPunk.deploy(
@@ -56,7 +56,7 @@ describe('PunkScape Contract', async () => {
     )
 
     contract = await PunkScape.deploy(
-      jalil.address,
+      punkscape.address,
       CID,
       START_SALE,
       'https://punkscape.xyz/contract-meta',
@@ -76,6 +76,29 @@ describe('PunkScape Contract', async () => {
 
     it('Should set the right contract meta data URL', async () => {
       expect(await contract.contractURI()).to.equal('https://punkscape.xyz/contract-meta')
+    })
+  })
+
+  describe('Update CID', () => {
+    it('Allows the owner to update the CID before sale starts', async () => {
+      futureSaleStart = (await ethers.provider.getBlock('latest')).timestamp + 180
+
+      contract = await PunkScape.deploy(
+        punkscape.address,
+        CID,
+        futureSaleStart,
+        'https://PunkScape.xyz/contract-meta',
+        networkConfig.CryptoPunksAddress,
+        oneDayPunkContract.address
+      )
+
+      await contract.setCID('NEW_IPFS_HASH')
+      expect(await contract.cid()).to.equal('NEW_IPFS_HASH')
+    })
+
+    it('Does not allow the owner to update the CID after sale starts', async () => {
+      await expect(contract.setCID('NEW_IPFS_HASH'))
+        .to.be.revertedWith('Sale has already started')
     })
   })
 
@@ -101,7 +124,7 @@ describe('PunkScape Contract', async () => {
         futureSaleStart = (await ethers.provider.getBlock('latest')).timestamp + 180
 
         contract = await PunkScape.deploy(
-          jalil.address,
+          punkscape.address,
           CID,
           futureSaleStart,
           'https://PunkScape.xyz/contract-meta',
@@ -383,7 +406,7 @@ describe('PunkScape Contract', async () => {
   describe('HasSecondarySalesFees', () => {
     it('Reports fee recipients for a token', async () => {
       const recipients = await contract.getFeeRecipients(80)
-      expect(JSON.stringify(recipients)).to.equal(JSON.stringify([jalil.address]))
+      expect(JSON.stringify(recipients)).to.equal(JSON.stringify([punkscape.address]))
     })
     it('Reports fee BPS for a token', async () => {
       const bpsArray = await contract.getFeeBps(80)
