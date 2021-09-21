@@ -5,7 +5,7 @@ const { daysInSeconds, nowInSeconds } = require('./../helpers/time')
 const { BigNumber } = require('ethers')
 
 const networkConfig = hre.config.networks[hre.network.name]
-const PRICE = parseUnits('0.028', 'ether')
+const PRICE = parseUnits('0.03', 'ether')
 const CID = 'IPFS_CID_HASH'
 const LARVA_LABS = '0xc352b534e8b987e036a93539fd6897f53488e56a'
 let START_SALE

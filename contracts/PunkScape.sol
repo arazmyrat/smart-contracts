@@ -38,7 +38,7 @@ contract PunkScape is
     WithMarketOffers,
     WithContractMetaData
 {
-    uint256 public price = 0.028 ether;
+    uint256 public price = 0.03 ether;
     address private cryptoPunksAddress;
     address private oneDayPunkAddress;
 

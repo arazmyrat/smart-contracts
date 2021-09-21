@@ -3,8 +3,6 @@ task('deployPunkScape', `Deploys the PunkScape.sol Contract`)
     const [deployer] = await ethers.getSigners()
     const networkConfig = hre.config.networks[hre.network.name]
 
-    // console.log('network', hre.network.name, networkConfig)
-
     console.log('Deploying contracts with the account:', deployer.address)
     console.log('Account Balance:', (await deployer.getBalance()).toString())
     console.log('MetaData CID:', process.env.SCAPES_METADATA_CID)
