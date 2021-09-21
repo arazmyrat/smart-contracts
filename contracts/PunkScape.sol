@@ -76,6 +76,11 @@ contract PunkScape is
         address owner = oneDayPunk.ownerOf(oneDayPunkId);
 
         require(
+            msg.value >= price,
+            "Pay up, friend"
+        );
+
+        require(
             oneDayPunkToPunkScape[oneDayPunkId] == 0,
             "PunkScape for this OneDayPunk has already been claimed"
         );
