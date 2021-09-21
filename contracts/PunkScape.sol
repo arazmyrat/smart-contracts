@@ -4,16 +4,16 @@ pragma solidity ^0.8.0;
 import "@1001-digital/erc721-extensions/contracts/WithContractMetaData.sol";
 import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
-import "@1001-digital/erc721-extensions/contracts/WithMarketOffers.sol";
 import "@1001-digital/erc721-extensions/contracts/WithWithdrawals.sol";
 import "@1001-digital/erc721-extensions/contracts/WithSaleStart.sol";
-import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./CryptoPunkInterface.sol";
 import "./OneDayPunk.sol";
+
+import "./WithMarketOffers.sol";
 
 // ████████████████████████████████████████████████████████████████████████████████████ //
 // ██                                                                                ██ //
@@ -30,7 +30,6 @@ import "./OneDayPunk.sol";
 contract PunkScape is
     ERC721,
     Ownable,
-    WithFees,
     WithSaleStart,
     WithWithdrawals,
     WithIPFSMetaData,
@@ -57,7 +56,7 @@ contract PunkScape is
     )
         ERC721("PunkScape", "PS")
         WithIPFSMetaData(_cid)
-        WithFees(_punkscape, 250)
+        WithMarketOffers(_punkscape, 500)
         WithSaleStart(_saleStart)
         RandomlyAssigned(10000, 1)
         WithContractMetaData(_contractMetaDataURI)
@@ -156,9 +155,9 @@ contract PunkScape is
 
     /// We support the `HasSecondarySalesFees` interface
     function supportsInterface(bytes4 interfaceId)
-        public view override(WithFees, ERC721)
+        public view override(WithMarketOffers, ERC721)
         returns (bool)
     {
-        return WithFees.supportsInterface(interfaceId);
+        return WithMarketOffers.supportsInterface(interfaceId);
     }
 }

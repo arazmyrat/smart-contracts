@@ -491,7 +491,10 @@ describe('PunkScape Contract', async () => {
             .withArgs(tokenId, seller.address, buyer.address, price)
             .to.emit(contract, 'Transfer')
             .withArgs(seller.address, buyer.address, tokenId)
-            .to.changeEtherBalance(seller, price, {
+            .to.changeEtherBalance(seller, price.mul('95').div('100'), {
+              provider: ethers.getDefaultProvider(),
+            })
+            .to.changeEtherBalance(contract, price.mul('5').div('100'), {
               provider: ethers.getDefaultProvider(),
             })
 
@@ -543,7 +546,7 @@ describe('PunkScape Contract', async () => {
     })
     it('Reports fee BPS for a token', async () => {
       const bpsArray = await contract.getFeeBps(80)
-      expect(JSON.stringify(bpsArray.map(bps => bps.toNumber()))).to.equal(JSON.stringify([250]))
+      expect(JSON.stringify(bpsArray.map(bps => bps.toNumber()))).to.equal(JSON.stringify([500]))
     })
   })
 })
