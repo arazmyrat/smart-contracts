@@ -38,6 +38,8 @@ contract PunkScape is
     WithContractMetaData
 {
     uint256 public price = 0.03 ether;
+    bool public frozen = false;
+
     address private cryptoPunksAddress;
     address private oneDayPunkAddress;
 
@@ -133,8 +135,15 @@ contract PunkScape is
     }
 
     /// Allow the contract owner to update the IPFS content identifier until sale starts.
-    function setCID(string memory _cid) external onlyOwner beforeSaleStart {
+    function setCID(string memory _cid) external onlyOwner {
+        require(frozen == false, "Metadata is frozen");
+
         _setCID(_cid);
+    }
+
+    /// Allow the contract owner to freeze the metadata.
+    function freezeCID() external onlyOwner {
+        frozen = true;
     }
 
     /// Get the tokenURI for a specific token

@@ -103,9 +103,16 @@ describe('PunkScape Contract', async () => {
       expect(await contract.cid()).to.equal('NEW_IPFS_HASH')
     })
 
-    it('Does not allow the owner to update the CID after sale starts', async () => {
+    it('Allows the owner to update the CID after sale starts', async () => {
+      await contract.setCID('NEW_IPFS_HASH')
+      expect(await contract.cid()).to.equal('NEW_IPFS_HASH')
+    })
+
+    it('Allows the owner to freeze the CID', async () => {
+      await contract.freezeCID()
+
       await expect(contract.setCID('NEW_IPFS_HASH'))
-        .to.be.revertedWith('Sale has already started')
+        .to.be.revertedWith('Metadata is frozen')
     })
   })
 
