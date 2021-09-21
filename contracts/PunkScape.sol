@@ -55,7 +55,7 @@ contract PunkScape is
         address _cryptoPunksAddress,
         address _oneDayPunkAddress
     )
-        ERC721("PunkScape", unicode"🌆")
+        ERC721("PunkScape", "PS")
         WithIPFSMetaData(_cid)
         WithFees(_punkscape, 250)
         WithSaleStart(_saleStart)
