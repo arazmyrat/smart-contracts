@@ -56,7 +56,7 @@ module.exports = {
       },
       CryptoPunksAddress: '0x52c5170414e72f2364869387bd9684245118deed',
       // FIXME
-      OneDayPunksAddress: '0x0',
+      OneDayPunksAddress: '0x3973acaa9a8c1d1d7530128472d18519451d0bbf',
     },
     localhost: HARDHAT_NETWORK_CONFIG,
     hardhat: HARDHAT_NETWORK_CONFIG,
