@@ -165,8 +165,15 @@ describe('PunkScape Contract', async () => {
       it('Should allow mint if sale has started', async () => {
         // Has to own an ODP
         const odp = await mintOneDayPunkFor(buyer1)
+
         // Has to have started sale
         await contract.connect(owner).setSaleStart(START_SALE)
+
+        // Try with less price
+        await expect(contract.connect(buyer1).claimForOneDayPunk(odp, { value: PRICE.sub(10) }))
+                      .to.be.revertedWith(`Pay up, friend`)
+
+        // Buy it
         await expect(contract.connect(buyer1).claimForOneDayPunk(odp, { value: PRICE }))
           .to.emit(contract, 'Transfer')
 
@@ -296,7 +303,7 @@ describe('PunkScape Contract', async () => {
           expect(await contract.balanceOf(buyer1.address)).to.equal(9)
         })
 
-        it('Fails if transaction value is less than 0.02 ETH per PunkScape', async () => {
+        it('Fails if transaction value is less than 0.03 ETH per PunkScape', async () => {
           await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE.sub(10) }))
                       .to.be.revertedWith(`Pay up, friend`)
 
