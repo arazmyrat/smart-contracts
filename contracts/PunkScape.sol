@@ -101,10 +101,15 @@ contract PunkScape is
     function claimAfter618Minutes(uint256 amount) external payable
         ensureAvailabilityFor(amount)
     {
+        uint256 _saleStart = saleStart();
+
+        // General claiming only available 618 minutes after sale start.
         require(
-            block.timestamp > (saleStart() + 618 * 60),
+            block.timestamp > (_saleStart + 618 * 60),
             "General claiming phase starts 618 minutes after sale start"
         );
+
+        // Can mint up to three PunkScapes per transaction.
         require(
             amount > 0,
             "Have to mint at least one PunkScape"
@@ -118,14 +123,16 @@ contract PunkScape is
             "Pay up, friend"
         );
 
-        // Both CryptoPunk owners and OneDayPunk owners can mint up to 3 per transaction
-        CryptoPunks cryptoPunks = CryptoPunks(cryptoPunksAddress);
-        OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
-        require(
-            oneDayPunk.balanceOf(msg.sender) == 1 ||
-            cryptoPunks.balanceOf(msg.sender) >= 1,
-            "You have to own a CryptoPunk or a OneDayPunk to mint a PunkScape"
-        );
+        // Within the first 24 hours only OneDayPunk / CryptoPunk holders can mint.
+        if (block.timestamp < (_saleStart + 24 * 60 * 60)) {
+            CryptoPunks cryptoPunks = CryptoPunks(cryptoPunksAddress);
+            OneDayPunk oneDayPunk = OneDayPunk(oneDayPunkAddress);
+            require(
+                oneDayPunk.balanceOf(msg.sender) == 1 ||
+                cryptoPunks.balanceOf(msg.sender) >= 1,
+                "You have to own a CryptoPunk or a OneDayPunk to mint a PunkScape"
+            );
+        }
 
         // Mint the new tokens
         for (uint256 index = 0; index < amount; index++) {

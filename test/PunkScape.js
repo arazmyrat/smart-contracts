@@ -287,6 +287,11 @@ describe('PunkScape Contract', async () => {
           await network.provider.send("evm_mine")
         })
 
+        it('General public should not be able to mint', async () => {
+          await expect(contract.connect(buyer2).claimAfter618Minutes(1, { value: PRICE }))
+            .to.be.revertedWith('You have to own a CryptoPunk or a OneDayPunk to mint a PunkScape')
+        })
+
         it('Holders of CryptoPunks should able to mint scapes after initial claiming phase', async () => {
           await expect(contract.connect(larvaLabs).claimAfter618Minutes(1, { value: PRICE }))
             .to.emit(contract, 'Transfer')
@@ -352,6 +357,28 @@ describe('PunkScape Contract', async () => {
 
           await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE }))
                       .to.be.revertedWith('No more tokens available')
+        })
+      })
+
+      describe('Claiming after 24 hours', () => {
+        beforeEach(async () => {
+          await oneDayPunkContract.connect(buyer1).claim()
+
+          await network.provider.send("evm_increaseTime", [24 * 60 * 60])
+          await network.provider.send("evm_mine")
+        })
+
+        it('General public should be able to mint after 24 hours', async () => {
+          await expect(contract.connect(buyer2).claimAfter618Minutes(1, { value: PRICE }))
+            .to.emit(contract, 'Transfer')
+        })
+
+        it('Holders of CryptoPunks or OneDayPunks should still able to mint scapes after 24 hours', async () => {
+          await expect(contract.connect(larvaLabs).claimAfter618Minutes(1, { value: PRICE }))
+            .to.emit(contract, 'Transfer')
+
+          await expect(contract.connect(buyer1).claimAfter618Minutes(1, { value: PRICE }))
+            .to.emit(contract, 'Transfer')
         })
       })
     })
