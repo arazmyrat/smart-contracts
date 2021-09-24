@@ -38,6 +38,7 @@ contract PunkScape is
     WithContractMetaData
 {
     uint256 public price = 0.03 ether;
+    string constant public provenanceHash = "Qme5GyE2rUHeSSHPeXdvGBAqQdLxzE31J1HTP6aJPJcGgA";
     bool public frozen = false;
 
     address private cryptoPunksAddress;

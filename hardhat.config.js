@@ -68,7 +68,7 @@ module.exports = {
   },
   gasReporter: {
     currency: 'USD',
-    gasPrice: 45,
+    gasPrice: 80,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     excludeContracts: [
       'CheckAddress',

@@ -84,6 +84,10 @@ describe('PunkScape Contract', async () => {
     it('Should set the right contract meta data URL', async () => {
       expect(await contract.contractURI()).to.equal('https://punkscape.xyz/contract-meta')
     })
+
+    it('Should expose the provenance hash', async () => {
+      expect(await contract.provenanceHash()).to.equal('Qme5GyE2rUHeSSHPeXdvGBAqQdLxzE31J1HTP6aJPJcGgA')
+    })
   })
 
   describe('Update CID', () => {
